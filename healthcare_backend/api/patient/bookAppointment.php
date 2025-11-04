@@ -1,54 +1,43 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Content-Type: application/json; charset=UTF-8");
 
-require_once '../../config/db_connect.php';
-require_once '../../core/functions.php';
-require_once '../../config/headers.php';
+include_once "../../config/db_connect.php";
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    die(json_encode(['success' => false, 'message' => 'Invalid request method.']));
+// ✅ Handle preflight request
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
+    exit;
 }
 
-// Read raw POST data
-$rawInput = file_get_contents('php://input');
-$data = json_decode($rawInput, true);
-
-// Validate JSON
-if (json_last_error() !== JSON_ERROR_NONE) {
-    die(json_encode(['success' => false, 'message' => 'Invalid JSON: ' . json_last_error_msg()]));
+// ✅ Handle only POST
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    echo json_encode(["success" => false, "message" => "Invalid request method."]);
+    exit;
 }
 
-$patient_id = intval($data['patient_id'] ?? 0);
-$doctor_id = intval($data['doctor_id'] ?? 0);
-$datetime = sanitize($data['start_datetime'] ?? '');
-$notes = sanitize($data['notes'] ?? '');
+$data = json_decode(file_get_contents("php://input"), true);
 
-// Validate required fields
-if (!$patient_id || !$doctor_id || !$datetime) {
-    die(json_encode(['success' => false, 'message' => 'Patient ID, Doctor ID, and Date/Time are required.']));
+if (!isset($data["patient_id"], $data["doctor_id"], $data["start_datetime"])) {
+    echo json_encode(["success" => false, "message" => "Missing required fields."]);
+    exit;
 }
 
-// Fix datetime format for MySQL DATETIME
-if (strlen($datetime) === 16) { // e.g., '2025-11-10 14:00'
-    $datetime .= ':00';
-}
+$patient_id = $data["patient_id"];
+$doctor_id = $data["doctor_id"];
+$datetime = $data["start_datetime"];
+$notes = $data["notes"] ?? null;
 
-// Prepare SQL
-$stmt = $mysqli->prepare("
-    INSERT INTO appointments (patient_id, doctor_id, datetime, status, notes)
-    VALUES (?, ?, ?, 'scheduled', ?)
-");
-
-if (!$stmt) {
-    die(json_encode(['success' => false, 'message' => 'Prepare failed: ' . $mysqli->error]));
-}
-
+$sql = "INSERT INTO appointments (patient_id, doctor_id, datetime, status, notes)
+        VALUES (?, ?, ?, 'scheduled', ?)";
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("iiss", $patient_id, $doctor_id, $datetime, $notes);
 
-if (!$stmt->execute()) {
-    die(json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]));
+if ($stmt->execute()) {
+    echo json_encode(["success" => true, "message" => "Appointment booked successfully."]);
+} else {
+    echo json_encode(["success" => false, "message" => "Database error: " . $stmt->error]);
 }
-
-echo json_encode(['success' => true, 'message' => 'Appointment booked successfully.']);
-exit;
+?>
