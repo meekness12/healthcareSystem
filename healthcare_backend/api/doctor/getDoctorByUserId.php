@@ -1,8 +1,6 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-
-require_once "../../config/db_connect.php"; // assumes $mysqli
+require_once __DIR__ . "/../../config/headers.php";
+require_once __DIR__ . "/../../config/db_connect.php"; // assumes $mysqli
 
 $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
 if ($user_id <= 0) {

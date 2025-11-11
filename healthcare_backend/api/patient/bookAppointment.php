@@ -1,83 +1,80 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json; charset=UTF-8");
+require_once __DIR__ . '/../../includes/session_check.php';
+require_role('patient');
+require_once __DIR__ . '/../../config/db_connect.php';
 
-include_once "../../config/db_connect.php";
-
-// Handle preflight request
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-    http_response_code(200);
-    exit;
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+  echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+  exit;
 }
 
-// Only allow POST requests
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    echo json_encode(["success" => false, "message" => "Invalid request method."]);
-    exit;
+$data = json_decode(file_get_contents('php://input'), true);
+if (!$data) {
+  echo json_encode(['success' => false, 'message' => 'Invalid input']);
+  exit;
 }
 
-// Decode JSON from frontend
-$data = json_decode(file_get_contents("php://input"), true);
+$doctor_id = isset($data['doctor_id']) ? (int)$data['doctor_id'] : 0;
+$requested_raw = trim($data['start_datetime'] ?? ''); // keep frontend compatibility
+$reason = trim($data['notes'] ?? '');
 
-// Validate required fields
-if (!isset($data["patient_id"], $data["doctor_id"], $data["start_datetime"])) {
-    echo json_encode(["success" => false, "message" => "Missing required fields."]);
-    exit;
+if ($doctor_id <= 0 || $requested_raw === '') {
+  echo json_encode(['success' => false, 'message' => 'doctor_id and start_datetime are required']);
+  exit;
 }
 
-$user_id = $data["patient_id"]; // frontend sends user_id
-$doctor_id = $data["doctor_id"];
-$datetime = $data["start_datetime"];
-$notes = $data["notes"] ?? "";
-
-// Convert datetime to MySQL DATETIME format
-$dt = date_create($datetime);
+$dt = date_create($requested_raw);
 if (!$dt) {
-    echo json_encode(["success" => false, "message" => "Invalid datetime format."]);
-    exit;
+  echo json_encode(['success' => false, 'message' => 'Invalid datetime format']);
+  exit;
 }
-$datetimeFormatted = date_format($dt, "Y-m-d H:i:s");
+$requested_datetime = date_format($dt, 'Y-m-d H:i:s');
 
-// Step 1: Get patient_id from user_id
-$getPatient = $mysqli->prepare("SELECT patient_id FROM patients WHERE user_id = ?");
-$getPatient->bind_param("i", $user_id);
+// Get patient_id from session user_id
+$user_id = (int)$_SESSION['user_id'];
+$getPatient = $mysqli->prepare('SELECT patient_id FROM patients WHERE user_id = ?');
+if (!$getPatient) {
+  http_response_code(500);
+  echo json_encode(['success' => false, 'message' => 'Prepare failed (getPatient)', 'error' => $mysqli->error]);
+  exit;
+}
+$getPatient->bind_param('i', $user_id);
 $getPatient->execute();
-$result = $getPatient->get_result();
-
-if ($result->num_rows === 0) {
-    echo json_encode(["success" => false, "message" => "Patient record not found."]);
-    exit;
+$res = $getPatient->get_result();
+if ($res->num_rows === 0) {
+  echo json_encode(['success' => false, 'message' => 'Patient profile not found']);
+  exit;
 }
+$patient_id = (int)$res->fetch_assoc()['patient_id'];
 
-$row = $result->fetch_assoc();
-$patient_id = $row["patient_id"];
-
-// Step 2: Check if doctor already has an appointment at the same datetime
-$check = $mysqli->prepare("SELECT appt_id FROM appointments WHERE doctor_id = ? AND datetime = ?");
-$check->bind_param("is", $doctor_id, $datetimeFormatted);
-$check->execute();
-$checkResult = $check->get_result();
-
-if ($checkResult->num_rows > 0) {
-    echo json_encode(["success" => false, "message" => "Doctor already has an appointment at this time."]);
-    exit;
-}
-
-// Step 3: Insert appointment
-$stmt = $mysqli->prepare("INSERT INTO appointments (patient_id, doctor_id, datetime, status, notes) VALUES (?, ?, ?, 'scheduled', ?)");
-$stmt->bind_param("iiss", $patient_id, $doctor_id, $datetimeFormatted, $notes);
-
-if ($stmt->execute()) {
-    echo json_encode(["success" => true, "message" => "Appointment booked successfully."]);
+// Insert appointment request
+$ins = $mysqli->prepare('INSERT INTO `appointment_requests` (`patient_id`, `doctor_id`, `requested_datetime`, `reason`, `status`) VALUES (?, ?, ?, ?, \'pending\')');
+if ($ins) {
+  $ins->bind_param('iiss', $patient_id, $doctor_id, $requested_datetime, $reason);
+  if ($ins->execute()) {
+    echo json_encode(['success' => true, 'message' => 'Appointment request submitted']);
+  } else {
+    http_response_code(500);
+    if ($ins->errno === 1062) {
+      echo json_encode(['success' => false, 'message' => 'You already requested this time']);
+    } else {
+      echo json_encode(['success' => false, 'message' => 'Execute failed (insert)', 'error' => $ins->error]);
+    }
+  }
 } else {
-    echo json_encode(["success" => false, "message" => "Database error: " . $stmt->error]);
+  // Fallback to safe direct insert
+  $rdt = $mysqli->real_escape_string($requested_datetime);
+  $rreason = $mysqli->real_escape_string($reason);
+  $sqlIns = "INSERT INTO `appointment_requests` (`patient_id`, `doctor_id`, `requested_datetime`, `reason`, `status`) VALUES ($patient_id, $doctor_id, '$rdt', '$rreason', 'pending')";
+  if ($mysqli->query($sqlIns)) {
+    echo json_encode(['success' => true, 'message' => 'Appointment request submitted']);
+  } else {
+    http_response_code(500);
+    if ($mysqli->errno === 1062) {
+      echo json_encode(['success' => false, 'message' => 'You already requested this time']);
+    } else {
+      echo json_encode(['success' => false, 'message' => 'Insert query error', 'error' => $mysqli->error, 'sql' => $sqlIns]);
+    }
+  }
 }
-
-// Close connections
-$stmt->close();
-$check->close();
-$getPatient->close();
-$mysqli->close();
 ?>

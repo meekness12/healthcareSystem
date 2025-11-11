@@ -1,8 +1,6 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-
-require_once "../../config/db_connect.php";
+require_once __DIR__ . "/../../config/headers.php";
+require_once __DIR__ . "/../../config/db_connect.php";
 
 $doctor_id = isset($_GET['doctor_id']) ? intval($_GET['doctor_id']) : 0;
 if ($doctor_id <= 0) {
