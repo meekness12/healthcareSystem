@@ -1,0 +1,17 @@
+{
+  "name": "healthcare-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Healthcare Management System Rwanda - Unified Monorepo",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "dev:backend": "php -S localhost:8000 -t backend/public",
+    "dev": "concurrently --kill-others-on-fail -n \"backend,frontend\" -c \"magenta,cyan\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "migrate:seed": "cd backend && php artisan migrate:fresh --seed",
+    "install:all": "npm install && npm --prefix frontend install && cd backend && composer install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
