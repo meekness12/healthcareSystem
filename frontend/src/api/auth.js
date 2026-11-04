@@ -1,53 +1,62 @@
-// src/api/auth.js
-import { API_BASE_URL } from "../config/constants";
+import apiClient from "./client";
 
-export const API_URL = `${API_BASE_URL}/auth/`;
+/**
+ * Authentication & Profile API Services
+ */
+export const authApi = {
+  // Register new patient account
+  register: async (payload) => {
+    const response = await apiClient.post("/auth/register", payload);
+    return response.data;
+  },
 
-export const registerUser = async (formData) => {
-  try {
-    const response = await fetch(`${API_URL}register.php`, {
-      method: "POST",
+  // Login existing user
+  login: async (credentials) => {
+    const response = await apiClient.post("/auth/login", credentials);
+    return response.data;
+  },
+
+  // Fetch currently authenticated user
+  getMe: async () => {
+    const response = await apiClient.get("/auth/me");
+    return response.data;
+  },
+
+  // Logout and revoke token
+  logout: async () => {
+    const response = await apiClient.post("/auth/logout");
+    return response.data;
+  },
+
+  // Update profile demographics
+  updateProfile: async (data) => {
+    const response = await apiClient.put("/auth/profile", data);
+    return response.data;
+  },
+
+  // Change password
+  changePassword: async (data) => {
+    const response = await apiClient.put("/auth/password", data);
+    return response.data;
+  },
+
+  // Upload avatar (multipart/form-data)
+  uploadAvatar: async (file) => {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const response = await apiClient.post("/auth/avatar", formData, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data",
       },
-      body: JSON.stringify(formData),
     });
+    return response.data;
+  },
 
-    const data = await response.json();
-    return {
-      status: data.success ? "success" : "error",
-      message: data.message || "Unknown error occurred",
-    };
-  } catch (error) {
-    console.error("Register error:", error);
-    return {
-      status: "error",
-      message: "Unable to reach server. Check your backend connection.",
-    };
-  }
+  // Public reference: insurance providers
+  getInsuranceProviders: async () => {
+    const response = await apiClient.get("/insurance-providers");
+    return response.data;
+  },
 };
 
-export const loginUser = async (credentials) => {
-  try {
-    const response = await fetch(`${API_URL}login.php`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(credentials),
-    });
-
-    const data = await response.json();
-    return {
-      status: data.success ? "success" : "error",
-      message: data.message,
-      user: data.user || null,
-    };
-  } catch (error) {
-    console.error("Login error:", error);
-    return {
-      status: "error",
-      message: "Unable to reach server. Check your backend connection.",
-    };
-  }
-};
+export default authApi;
