@@ -6,6 +6,8 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProfileSettings from "./pages/profile/ProfileSettings";
+import BranchDirectory from "./pages/branches/BranchDirectory";
+import DoctorDirectory from "./pages/doctors/DoctorDirectory";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import PatientDashboard from "./pages/patient/PatientDashboard";
@@ -26,6 +28,8 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/branches" element={<BranchDirectory />} />
+            <Route path="/doctors" element={<DoctorDirectory />} />
 
             {/* Authenticated Profile Route for all roles */}
             <Route

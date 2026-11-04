@@ -98,18 +98,39 @@ const Header = () => {
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
         {/* Brand & Hospital Network */}
-        <Box
-          sx={{ display: "flex", alignItems: "center", gap: 1.5, cursor: "pointer" }}
-          onClick={() => (isAuthenticated ? handleDashboardClick() : navigate("/"))}
-        >
-          <LocalHospital color="primary" sx={{ fontSize: 32 }} />
-          <Box>
-            <Typography variant="h6" color="primary" sx={{ lineHeight: 1.1, fontWeight: 700 }}>
-              Healthcare System
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Rwanda Hospital Network • Integrated Care
-            </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 1.5, cursor: "pointer" }}
+            onClick={() => (isAuthenticated ? handleDashboardClick() : navigate("/"))}
+          >
+            <LocalHospital color="primary" sx={{ fontSize: 32 }} />
+            <Box>
+              <Typography variant="h6" color="primary" sx={{ lineHeight: 1.1, fontWeight: 700 }}>
+                Healthcare System
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Rwanda Hospital Network
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => navigate("/branches")}
+              sx={{ fontWeight: 600, color: "text.secondary", "&:hover": { color: "primary.main" } }}
+            >
+              Branches
+            </Button>
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => navigate("/doctors")}
+              sx={{ fontWeight: 600, color: "text.secondary", "&:hover": { color: "primary.main" } }}
+            >
+              Doctors
+            </Button>
           </Box>
         </Box>
 
