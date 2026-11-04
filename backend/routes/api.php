@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\SpecialtyController;
 use App\Http\Controllers\Api\DoctorController;
+use App\Http\Controllers\Api\DoctorScheduleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,8 @@ Route::get('/departments/{id}', [DepartmentController::class, 'show']);
 Route::get('/specialties', [SpecialtyController::class, 'index']);
 Route::get('/doctors', [DoctorController::class, 'index']);
 Route::get('/doctors/{id}', [DoctorController::class, 'show']);
+Route::get('/doctors/{id}/schedules', [DoctorScheduleController::class, 'show']);
+Route::get('/doctors/{id}/available-slots', [DoctorScheduleController::class, 'availableSlots']);
 
 // Public Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -48,6 +51,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::put('/password', [AuthController::class, 'changePassword']);
         Route::post('/avatar', [AuthController::class, 'uploadAvatar']);
+    });
+
+    // Doctor Clinical Controls
+    Route::prefix('doctor')->group(function () {
+        Route::put('/my-schedule', [DoctorScheduleController::class, 'updateMySchedule']);
     });
 
     // Administrative Facility Management
