@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicDataController;
+use App\Http\Controllers\Api\BranchController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\SpecialtyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,8 +23,13 @@ Route::get('/health', function () {
     ]);
 });
 
-// Public Reference Data
+// Public Hospital Directory & Reference Data
 Route::get('/insurance-providers', [PublicDataController::class, 'insuranceProviders']);
+Route::get('/branches', [BranchController::class, 'index']);
+Route::get('/branches/{id}', [BranchController::class, 'show']);
+Route::get('/departments', [DepartmentController::class, 'index']);
+Route::get('/departments/{id}', [DepartmentController::class, 'show']);
+Route::get('/specialties', [SpecialtyController::class, 'index']);
 
 // Public Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -37,5 +45,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::put('/password', [AuthController::class, 'changePassword']);
         Route::post('/avatar', [AuthController::class, 'uploadAvatar']);
+    });
+
+    // Administrative Facility Management
+    Route::prefix('admin')->group(function () {
+        Route::post('/branches', [BranchController::class, 'store']);
+        Route::put('/branches/{id}', [BranchController::class, 'update']);
+        Route::delete('/branches/{id}', [BranchController::class, 'destroy']);
+        Route::post('/departments', [DepartmentController::class, 'store']);
+        Route::put('/departments/{id}', [DepartmentController::class, 'update']);
+        Route::delete('/departments/{id}', [DepartmentController::class, 'destroy']);
     });
 });
