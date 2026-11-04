@@ -10,6 +10,7 @@ import BranchDirectory from "./pages/branches/BranchDirectory";
 import DoctorDirectory from "./pages/doctors/DoctorDirectory";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
+import DoctorScheduleManager from "./pages/doctor/DoctorScheduleManager";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import MyAppointments from "./pages/patient/MyAppointments";
 import MedicalRecords from "./pages/patient/MedicalRecords";
@@ -57,6 +58,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["doctor"]}>
                   <DoctorDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doctor/schedule"
+              element={
+                <ProtectedRoute allowedRoles={["doctor", "admin"]}>
+                  <DoctorScheduleManager />
                 </ProtectedRoute>
               }
             />

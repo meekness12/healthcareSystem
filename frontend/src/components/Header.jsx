@@ -23,6 +23,7 @@ import {
   Settings,
   Logout,
   Dashboard,
+  EventAvailable,
 } from "@mui/icons-material";
 import { useThemeMode } from "../theme/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -213,6 +214,15 @@ const Header = () => {
                   </ListItemIcon>
                   <ListItemText primary="Dashboard" />
                 </MenuItem>
+
+                {["doctor", "admin"].includes(user.role) && (
+                  <MenuItem onClick={() => { handleCloseMenu(); navigate("/doctor/schedule"); }}>
+                    <ListItemIcon>
+                      <EventAvailable fontSize="small" color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary="My Availability Schedule" />
+                  </MenuItem>
+                )}
 
                 <MenuItem onClick={handleProfileClick}>
                   <ListItemIcon>
