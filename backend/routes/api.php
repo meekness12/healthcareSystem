@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\SpecialtyController;
+use App\Http\Controllers\Api\DoctorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,8 @@ Route::get('/branches/{id}', [BranchController::class, 'show']);
 Route::get('/departments', [DepartmentController::class, 'index']);
 Route::get('/departments/{id}', [DepartmentController::class, 'show']);
 Route::get('/specialties', [SpecialtyController::class, 'index']);
+Route::get('/doctors', [DoctorController::class, 'index']);
+Route::get('/doctors/{id}', [DoctorController::class, 'show']);
 
 // Public Authentication Routes
 Route::prefix('auth')->group(function () {
