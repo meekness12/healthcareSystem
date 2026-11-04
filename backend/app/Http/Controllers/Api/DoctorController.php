@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AdminDoctorUpdateRequest;
 use App\Http\Resources\DoctorResource;
 use App\Models\Doctor;
 use Illuminate\Http\JsonResponse;
@@ -73,6 +74,22 @@ class DoctorController extends Controller
 
         return response()->json([
             'success' => true,
+            'data' => new DoctorResource($doctor),
+        ]);
+    }
+
+    /**
+     * Update doctor clinical assignment and consultation parameters (Admin only).
+     */
+    public function adminUpdate(AdminDoctorUpdateRequest $request, $id): JsonResponse
+    {
+        $doctor = Doctor::findOrFail($id);
+        $doctor->update($request->validated());
+        $doctor->load(['user', 'branch', 'department', 'specialty']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Doctor clinical parameters updated successfully.',
             'data' => new DoctorResource($doctor),
         ]);
     }

@@ -66,5 +66,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/departments', [DepartmentController::class, 'store']);
         Route::put('/departments/{id}', [DepartmentController::class, 'update']);
         Route::delete('/departments/{id}', [DepartmentController::class, 'destroy']);
+        Route::put('/doctors/{id}', [DoctorController::class, 'adminUpdate']);
     });
 });
