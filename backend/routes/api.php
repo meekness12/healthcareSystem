@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\MedicineController;
 use App\Http\Controllers\Api\PrescriptionController;
 use App\Http\Controllers\Api\ConsultationController;
 use App\Http\Controllers\Api\MedicalRecordFileController;
+use App\Http\Controllers\Api\LabTestController;
+use App\Http\Controllers\Api\PharmacyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -96,6 +98,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/patients/{patientId}/medical-files', [MedicalRecordFileController::class, 'index']);
     Route::post('/patients/{patientId}/medical-files', [MedicalRecordFileController::class, 'upload']);
     Route::get('/medical-files/{id}/download', [MedicalRecordFileController::class, 'download']);
+
+    // Laboratory Diagnostics Workflow
+    Route::prefix('lab')->group(function () {
+        Route::get('/test-types', [LabTestController::class, 'testTypes']);
+        Route::get('/tests', [LabTestController::class, 'index']);
+        Route::post('/tests', [LabTestController::class, 'store']);
+        Route::post('/tests/{id}/assign', [LabTestController::class, 'assign']);
+        Route::post('/tests/{id}/result', [LabTestController::class, 'recordResult']);
+        Route::get('/results/{id}/download', [LabTestController::class, 'downloadReport']);
+    });
+
+    // Pharmacy Dispensary & Inventory Workflow
+    Route::prefix('pharmacy')->group(function () {
+        Route::get('/prescriptions', [PharmacyController::class, 'prescriptions']);
+        Route::post('/dispense', [PharmacyController::class, 'dispense']);
+        Route::get('/inventory', [PharmacyController::class, 'inventory']);
+        Route::get('/history', [PharmacyController::class, 'history']);
+    });
 
     // Doctor Clinical Controls
     Route::prefix('doctor')->group(function () {
