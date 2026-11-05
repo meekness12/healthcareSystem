@@ -28,6 +28,8 @@ import {
   BookOnline,
   Warning,
   HistoryEdu,
+  Science,
+  LocalPharmacy,
 } from "@mui/icons-material";
 import { useThemeMode } from "../theme/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -253,6 +255,24 @@ const Header = () => {
                       <ListItemText primary="My Availability Schedule" />
                     </MenuItem>
                   </>
+                )}
+
+                {["lab_technician", "admin"].includes(user.role) && (
+                  <MenuItem onClick={() => { handleCloseMenu(); navigate("/lab/dashboard"); }}>
+                    <ListItemIcon>
+                      <Science fontSize="small" color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary="Laboratory Workspace" />
+                  </MenuItem>
+                )}
+
+                {["pharmacist", "admin"].includes(user.role) && (
+                  <MenuItem onClick={() => { handleCloseMenu(); navigate("/pharmacy/dashboard"); }}>
+                    <ListItemIcon>
+                      <LocalPharmacy fontSize="small" color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary="Dispensary Console" />
+                  </MenuItem>
                 )}
 
                 {user.role === "patient" && (

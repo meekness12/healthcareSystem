@@ -19,6 +19,7 @@ import MyAppointments from "./pages/patient/MyAppointments";
 import MedicalRecords from "./pages/patient/MedicalRecords";
 import BookAppointment from "./pages/patient/BookAppointment";
 import LabDashboard from "./pages/lab/LabDashboard";
+import PharmacyDashboard from "./pages/pharmacy/PharmacyDashboard";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -106,6 +107,16 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["lab_technician", "admin"]}>
                   <LabDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Pharmacy Dispensary Routes */}
+            <Route
+              path="/pharmacy/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["pharmacist", "admin"]}>
+                  <PharmacyDashboard />
                 </ProtectedRoute>
               }
             />
