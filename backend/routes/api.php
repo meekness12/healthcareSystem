@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\SpecialtyController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\DoctorScheduleController;
+use App\Http\Controllers\Api\AppointmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::put('/password', [AuthController::class, 'changePassword']);
         Route::post('/avatar', [AuthController::class, 'uploadAvatar']);
+    });
+
+    // Clinical Appointments Lifecycle
+    Route::prefix('appointments')->group(function () {
+        Route::get('/', [AppointmentController::class, 'index']);
+        Route::post('/', [AppointmentController::class, 'store']);
+        Route::get('/{id}', [AppointmentController::class, 'show']);
     });
 
     // Doctor Clinical Controls
