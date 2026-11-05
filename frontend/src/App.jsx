@@ -18,6 +18,7 @@ import PatientDashboard from "./pages/patient/PatientDashboard";
 import MyAppointments from "./pages/patient/MyAppointments";
 import MedicalRecords from "./pages/patient/MedicalRecords";
 import BookAppointment from "./pages/patient/BookAppointment";
+import LabDashboard from "./pages/lab/LabDashboard";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -95,6 +96,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EmergencyTriage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Laboratory Technician Routes */}
+            <Route
+              path="/lab/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["lab_technician", "admin"]}>
+                  <LabDashboard />
                 </ProtectedRoute>
               }
             />
