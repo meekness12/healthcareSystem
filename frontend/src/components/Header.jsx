@@ -24,6 +24,9 @@ import {
   Logout,
   Dashboard,
   EventAvailable,
+  EventNote,
+  BookOnline,
+  Warning,
 } from "@mui/icons-material";
 import { useThemeMode } from "../theme/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -115,7 +118,7 @@ const Header = () => {
             </Box>
           </Box>
 
-          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1.5 }}>
             <Button
               color="inherit"
               size="small"
@@ -131,6 +134,25 @@ const Header = () => {
               sx={{ fontWeight: 600, color: "text.secondary", "&:hover": { color: "primary.main" } }}
             >
               Doctors
+            </Button>
+            <Button
+              color="error"
+              size="small"
+              variant="outlined"
+              onClick={() => navigate("/emergency/triage")}
+              startIcon={<Warning fontSize="small" />}
+              sx={{
+                fontWeight: 700,
+                fontSize: "0.75rem",
+                borderRadius: 2,
+                px: 1.5,
+                py: 0.4,
+                textTransform: "none",
+                borderColor: "error.main",
+                "&:hover": { bgcolor: "error.main", color: "#fff" },
+              }}
+            >
+              Emergency Triage
             </Button>
           </Box>
         </Box>
@@ -216,12 +238,37 @@ const Header = () => {
                 </MenuItem>
 
                 {["doctor", "admin"].includes(user.role) && (
-                  <MenuItem onClick={() => { handleCloseMenu(); navigate("/doctor/schedule"); }}>
-                    <ListItemIcon>
-                      <EventAvailable fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary="My Availability Schedule" />
-                  </MenuItem>
+                  <>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/doctor/appointments"); }}>
+                      <ListItemIcon>
+                        <EventNote fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="Appointments Queue" />
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/doctor/schedule"); }}>
+                      <ListItemIcon>
+                        <EventAvailable fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="My Availability Schedule" />
+                    </MenuItem>
+                  </>
+                )}
+
+                {user.role === "patient" && (
+                  <>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/book-appointment"); }}>
+                      <ListItemIcon>
+                        <BookOnline fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="Book Appointment" />
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/appointments"); }}>
+                      <ListItemIcon>
+                        <EventNote fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="My Appointments" />
+                    </MenuItem>
+                  </>
                 )}
 
                 <MenuItem onClick={handleProfileClick}>

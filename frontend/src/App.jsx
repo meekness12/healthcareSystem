@@ -11,6 +11,8 @@ import DoctorDirectory from "./pages/doctors/DoctorDirectory";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorScheduleManager from "./pages/doctor/DoctorScheduleManager";
+import DoctorAppointments from "./pages/doctor/DoctorAppointments";
+import EmergencyTriage from "./pages/emergency/EmergencyTriage";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import MyAppointments from "./pages/patient/MyAppointments";
 import MedicalRecords from "./pages/patient/MedicalRecords";
@@ -66,6 +68,24 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["doctor", "admin"]}>
                   <DoctorScheduleManager />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doctor/appointments"
+              element={
+                <ProtectedRoute allowedRoles={["doctor", "admin"]}>
+                  <DoctorAppointments />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Emergency Triage (Accessible to staff and walk-in intakes) */}
+            <Route
+              path="/emergency/triage"
+              element={
+                <ProtectedRoute>
+                  <EmergencyTriage />
                 </ProtectedRoute>
               }
             />
