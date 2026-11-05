@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\SpecialtyController;
 use App\Http\Controllers\Api\DoctorController;
 use App\Http\Controllers\Api\DoctorScheduleController;
 use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\EmergencyTriageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,6 +63,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}/status', [AppointmentController::class, 'updateStatus']);
         Route::put('/{id}/reschedule', [AppointmentController::class, 'reschedule']);
     });
+
+    // Emergency Triage Fast-Track
+    Route::post('/emergency/triage-intake', [EmergencyTriageController::class, 'intake']);
 
     // Doctor Clinical Controls
     Route::prefix('doctor')->group(function () {
