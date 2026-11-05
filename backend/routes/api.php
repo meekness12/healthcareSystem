@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\EmergencyTriageController;
 use App\Http\Controllers\Api\MedicineController;
 use App\Http\Controllers\Api\PrescriptionController;
+use App\Http\Controllers\Api\ConsultationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +82,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [PrescriptionController::class, 'show']);
         Route::patch('/{id}/status', [PrescriptionController::class, 'updateStatus']);
     });
+
+    // Clinical Consultations & Patient EHR History
+    Route::prefix('consultations')->group(function () {
+        Route::get('/', [ConsultationController::class, 'index']);
+        Route::post('/', [ConsultationController::class, 'store']);
+        Route::get('/{id}', [ConsultationController::class, 'show']);
+    });
+    Route::get('/patients/{patientId}/consultation-history', [ConsultationController::class, 'patientHistory']);
 
     // Doctor Clinical Controls
     Route::prefix('doctor')->group(function () {
