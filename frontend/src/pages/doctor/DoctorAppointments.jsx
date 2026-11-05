@@ -38,9 +38,11 @@ import {
   EventBusy,
 } from "@mui/icons-material";
 import appointmentApi from "../../api/appointment";
+import { useNavigate } from "react-router-dom";
 
 const DoctorAppointments = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -284,13 +286,10 @@ const DoctorAppointments = () => {
                       size="small"
                       variant="contained"
                       color="primary"
-                      onClick={() => {
-                        setActionAppt(appt);
-                        setActionType("completed");
-                        setClinicalNotes("");
-                      }}
+                      startIcon={<MedicalServices />}
+                      onClick={() => navigate(`/doctor/consultation/${appt.id}`)}
                     >
-                      Mark Completed
+                      Start Consultation
                     </Button>
                   )}
 
