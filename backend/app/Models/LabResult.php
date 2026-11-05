@@ -22,6 +22,8 @@ class LabResult extends Model
         'result_date' => 'datetime',
     ];
 
+    protected $appends = ['report_pdf_url'];
+
     public function labTest()
     {
         return $this->belongsTo(LabTest::class);
@@ -35,5 +37,10 @@ class LabResult extends Model
     public function reviewedBy()
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function getReportPdfUrlAttribute(): ?string
+    {
+        return $this->report_pdf_path ? asset('storage/' . $this->report_pdf_path) : null;
     }
 }

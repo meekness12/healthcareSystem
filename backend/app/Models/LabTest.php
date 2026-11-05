@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class LabTest extends Model
@@ -55,5 +56,43 @@ class LabTest extends Model
     public function result()
     {
         return $this->hasOne(LabResult::class);
+    }
+
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeInProgress(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['assigned', 'in_progress']);
+    }
+
+    public function scopeCompleted(Builder $query): Builder
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function scopePriority(Builder $query, ?string $priority): Builder
+    {
+        if ($priority && $priority !== 'all') {
+            return $query->where('priority', $priority);
+        }
+        return $query;
+    }
+
+    public function scopeForPatient(Builder $query, int $patientId): Builder
+    {
+        return $query->where('patient_id', $patientId);
+    }
+
+    public function scopeForTechnician(Builder $query, int $technicianId): Builder
+    {
+        return $query->where('assigned_to', $technicianId);
+    }
+
+    public function scopeRecent(Builder $query): Builder
+    {
+        return $query->orderBy('created_at', 'desc');
     }
 }

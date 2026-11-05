@@ -14,6 +14,7 @@ class DispensationItem extends Model
     ];
 
     protected $casts = [
+        'quantity_dispensed' => 'integer',
         'collection_date' => 'date',
     ];
 

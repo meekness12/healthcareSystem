@@ -30,6 +30,11 @@ class Medicine extends Model
         return $this->hasMany(PrescriptionItem::class);
     }
 
+    public function hasSufficientStock(int $requestedQty): bool
+    {
+        return $this->stock_quantity >= $requestedQty;
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
@@ -38,6 +43,11 @@ class Medicine extends Model
     public function scopeInStock(Builder $query): Builder
     {
         return $query->where('stock_quantity', '>', 0);
+    }
+
+    public function scopeLowStock(Builder $query): Builder
+    {
+        return $query->whereColumn('stock_quantity', '<=', 'reorder_level');
     }
 
     public function scopeCategory(Builder $query, ?string $category): Builder
