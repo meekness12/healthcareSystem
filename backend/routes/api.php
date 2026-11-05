@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\EmergencyTriageController;
 use App\Http\Controllers\Api\MedicineController;
 use App\Http\Controllers\Api\PrescriptionController;
 use App\Http\Controllers\Api\ConsultationController;
+use App\Http\Controllers\Api\MedicalRecordFileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,6 +91,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [ConsultationController::class, 'show']);
     });
     Route::get('/patients/{patientId}/consultation-history', [ConsultationController::class, 'patientHistory']);
+
+    // Medical Record Files & Diagnostic Scans
+    Route::get('/patients/{patientId}/medical-files', [MedicalRecordFileController::class, 'index']);
+    Route::post('/patients/{patientId}/medical-files', [MedicalRecordFileController::class, 'upload']);
+    Route::get('/medical-files/{id}/download', [MedicalRecordFileController::class, 'download']);
 
     // Doctor Clinical Controls
     Route::prefix('doctor')->group(function () {
