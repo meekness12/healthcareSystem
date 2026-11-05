@@ -27,6 +27,7 @@ import {
   EventNote,
   BookOnline,
   Warning,
+  HistoryEdu,
 } from "@mui/icons-material";
 import { useThemeMode } from "../theme/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -267,6 +268,12 @@ const Header = () => {
                         <EventNote fontSize="small" color="primary" />
                       </ListItemIcon>
                       <ListItemText primary="My Appointments" />
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/records"); }}>
+                      <ListItemIcon>
+                        <HistoryEdu fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="My Medical Records (EHR)" />
                     </MenuItem>
                   </>
                 )}
