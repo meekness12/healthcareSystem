@@ -59,6 +59,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [AppointmentController::class, 'index']);
         Route::post('/', [AppointmentController::class, 'store']);
         Route::get('/{id}', [AppointmentController::class, 'show']);
+        Route::put('/{id}/status', [AppointmentController::class, 'updateStatus']);
+        Route::put('/{id}/reschedule', [AppointmentController::class, 'reschedule']);
     });
 
     // Doctor Clinical Controls

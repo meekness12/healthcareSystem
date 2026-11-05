@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BookAppointmentRequest;
+use App\Http\Requests\UpdateAppointmentStatusRequest;
+use App\Http\Requests\RescheduleAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
 use App\Models\Doctor;
@@ -289,6 +291,183 @@ class AppointmentController extends Controller
 
         return response()->json([
             'success' => true,
+            'data' => new AppointmentResource($appointment),
+        ]);
+    }
+
+    /**
+     * Update appointment lifecycle status (confirm, complete, cancel, no-show).
+     */
+    public function updateStatus(UpdateAppointmentStatusRequest $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        $validated = $request->validated();
+        $newStatus = $validated['status'];
+
+        $appointment = Appointment::with(['patient.user', 'doctor.user'])->findOrFail($id);
+
+        // Security authorization check
+        if ($user->role === 'patient') {
+            if ($appointment->patient_id !== $user->patient?->id) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+            }
+            // Patient can only cancel their own appointment
+            if ($newStatus !== 'cancelled') {
+                return response()->json(['success' => false, 'message' => 'Patients may only cancel appointments.'], 403);
+            }
+        } elseif ($user->role === 'doctor') {
+            if ($appointment->doctor_id !== $user->doctor?->id) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+            }
+        }
+
+        // State Machine validation
+        if ($appointment->status === 'completed' && $newStatus !== 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Completed appointments cannot have their status altered.',
+            ], 422);
+        }
+
+        if ($appointment->status === 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cancelled appointments cannot be reopened. Please book a new appointment.',
+            ], 422);
+        }
+
+        $appointment->status = $newStatus;
+        if (isset($validated['notes'])) {
+            $appointment->notes = $validated['notes'];
+        }
+        if (isset($validated['cancellation_reason'])) {
+            $appointment->notes = trim(($appointment->notes ? $appointment->notes . ' | ' : '') . 'Cancellation: ' . $validated['cancellation_reason']);
+        }
+        $appointment->save();
+
+        // Dispatch status update notification
+        $patientUserId = $appointment->patient?->user_id;
+        if ($patientUserId) {
+            Notification::create([
+                'user_id' => $patientUserId,
+                'title' => 'Appointment Status Updated',
+                'message' => "Your appointment ({$appointment->booking_reference}) status changed to " . strtoupper($newStatus) . '.',
+                'notification_type' => 'appointment',
+                'is_read' => false,
+            ]);
+        }
+
+        $appointment->load([
+            'patient.user',
+            'patient.insuranceProvider',
+            'doctor.user',
+            'doctor.specialty',
+            'doctor.department',
+            'branch',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment status updated successfully.',
+            'data' => new AppointmentResource($appointment),
+        ]);
+    }
+
+    /**
+     * Reschedule appointment to a new date and time slot.
+     */
+    public function reschedule(RescheduleAppointmentRequest $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        $validated = $request->validated();
+
+        $appointment = Appointment::with(['doctor.schedules', 'patient.user'])->findOrFail($id);
+
+        // Security authorization check
+        if ($user->role === 'patient' && $appointment->patient_id !== $user->patient?->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+        } elseif ($user->role === 'doctor' && $appointment->doctor_id !== $user->doctor?->id) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized action.'], 403);
+        }
+
+        if (in_array($appointment->status, ['completed', 'cancelled'])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Cannot reschedule a {$appointment->status} appointment.",
+            ], 422);
+        }
+
+        $newDate = $validated['appointment_date'];
+        $newStartTime = substr($validated['start_time'], 0, 5);
+        $doctor = $appointment->doctor;
+
+        if ($doctor->status === 'on_leave') {
+            throw ValidationException::withMessages([
+                'appointment_date' => ['Doctor is currently on clinical leave.'],
+            ]);
+        }
+
+        // Validate doctor schedule on new day
+        $dayOfWeek = strtolower(Carbon::parse($newDate)->format('l'));
+        $schedule = $doctor->schedules->where('day_of_week', $dayOfWeek)->where('status', 'active')->first();
+
+        if (!$schedule) {
+            throw ValidationException::withMessages([
+                'appointment_date' => ["Doctor does not conduct consultations on {$dayOfWeek}s."],
+            ]);
+        }
+
+        $slotMinutes = $schedule->slot_duration_minutes ?: 30;
+        $newEndTime = Carbon::createFromFormat('H:i', $newStartTime)->addMinutes($slotMinutes)->format('H:i:s');
+        $newStartTimeSql = Carbon::createFromFormat('H:i', $newStartTime)->format('H:i:s');
+
+        // Check double-booking on new slot (excluding current appointment id)
+        $conflict = Appointment::where('doctor_id', $doctor->id)
+            ->where('appointment_date', $newDate)
+            ->where('start_time', $newStartTimeSql)
+            ->where('id', '!=', $appointment->id)
+            ->whereNotIn('status', ['cancelled'])
+            ->exists();
+
+        if ($conflict) {
+            throw ValidationException::withMessages([
+                'start_time' => ['The requested slot is already booked for another patient.'],
+            ]);
+        }
+
+        // Update appointment
+        $appointment->appointment_date = $newDate;
+        $appointment->start_time = $newStartTimeSql;
+        $appointment->end_time = $newEndTime;
+        $appointment->status = 'pending'; // Reset to pending confirmation
+        if (isset($validated['reason'])) {
+            $appointment->notes = trim(($appointment->notes ? $appointment->notes . ' | ' : '') . 'Rescheduled: ' . $validated['reason']);
+        }
+        $appointment->save();
+
+        // Notify patient and doctor
+        if ($appointment->patient?->user_id) {
+            Notification::create([
+                'user_id' => $appointment->patient->user_id,
+                'title' => 'Appointment Rescheduled',
+                'message' => "Your consultation ({$appointment->booking_reference}) was rescheduled to {$newDate} at {$newStartTimeSql}.",
+                'notification_type' => 'appointment',
+                'is_read' => false,
+            ]);
+        }
+
+        $appointment->load([
+            'patient.user',
+            'patient.insuranceProvider',
+            'doctor.user',
+            'doctor.specialty',
+            'doctor.department',
+            'branch',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment rescheduled successfully.',
             'data' => new AppointmentResource($appointment),
         ]);
     }
