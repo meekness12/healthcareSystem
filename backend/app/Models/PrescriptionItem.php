@@ -17,6 +17,12 @@ class PrescriptionItem extends Model
         'instructions',
     ];
 
+    protected $casts = [
+        'duration_days' => 'integer',
+        'quantity_prescribed' => 'integer',
+        'quantity_dispensed' => 'integer',
+    ];
+
     public function prescription()
     {
         return $this->belongsTo(Prescription::class);

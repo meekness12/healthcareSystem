@@ -15,6 +15,8 @@ class MedicalRecordFile extends Model
         'uploaded_by',
     ];
 
+    protected $appends = ['file_url'];
+
     public function patient()
     {
         return $this->belongsTo(Patient::class);
@@ -28,5 +30,10 @@ class MedicalRecordFile extends Model
     public function uploadedBy()
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function getFileUrlAttribute(): string
+    {
+        return asset('storage/' . $this->file_path);
     }
 }
