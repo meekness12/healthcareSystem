@@ -30,6 +30,8 @@ import {
   HistoryEdu,
   Science,
   LocalPharmacy,
+  Payments,
+  ReceiptLong,
 } from "@mui/icons-material";
 import { useThemeMode } from "../theme/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -275,6 +277,15 @@ const Header = () => {
                   </MenuItem>
                 )}
 
+                {["billing_officer", "admin"].includes(user.role) && (
+                  <MenuItem onClick={() => { handleCloseMenu(); navigate("/billing/dashboard"); }}>
+                    <ListItemIcon>
+                      <Payments fontSize="small" color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary="Billing & Revenue Console" />
+                  </MenuItem>
+                )}
+
                 {user.role === "patient" && (
                   <>
                     <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/book-appointment"); }}>
@@ -294,6 +305,12 @@ const Header = () => {
                         <HistoryEdu fontSize="small" color="primary" />
                       </ListItemIcon>
                       <ListItemText primary="My Medical Records (EHR)" />
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/billing"); }}>
+                      <ListItemIcon>
+                        <ReceiptLong fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="My Invoices & Payments" />
                     </MenuItem>
                   </>
                 )}

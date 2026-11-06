@@ -20,6 +20,8 @@ import MedicalRecords from "./pages/patient/MedicalRecords";
 import BookAppointment from "./pages/patient/BookAppointment";
 import LabDashboard from "./pages/lab/LabDashboard";
 import PharmacyDashboard from "./pages/pharmacy/PharmacyDashboard";
+import BillingDashboard from "./pages/billing/BillingDashboard";
+import PatientBilling from "./pages/patient/PatientBilling";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -121,6 +123,16 @@ function App() {
               }
             />
 
+            {/* Billing & Insurance Claims Routes */}
+            <Route
+              path="/billing/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["billing_officer", "admin"]}>
+                  <BillingDashboard />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Patient routes */}
             <Route
               path="/patient/dashboard"
@@ -143,6 +155,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["patient"]}>
                   <MedicalRecords />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/patient/billing"
+              element={
+                <ProtectedRoute allowedRoles={["patient"]}>
+                  <PatientBilling />
                 </ProtectedRoute>
               }
             />
