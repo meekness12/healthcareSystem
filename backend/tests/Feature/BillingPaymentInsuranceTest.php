@@ -512,4 +512,49 @@ class BillingPaymentInsuranceTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    /**
+     * Test authenticated staff can search and list patients directory for friendly billing selectors.
+     */
+    public function test_staff_can_search_and_list_patients_directory(): void
+    {
+        $billingOfficer = User::where('role', 'billing_officer')->first();
+        $this->assertNotNull($billingOfficer);
+
+        $patient = Patient::with('user')->first();
+        $this->assertNotNull($patient);
+
+        // Test listing patients
+        $response = $this->actingAs($billingOfficer, 'sanctum')
+            ->getJson('/api/patients');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+            ])
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => [
+                        'id',
+                        'patient_number',
+                        'name',
+                        'email',
+                        'phone',
+                        'national_id',
+                        'insurance_provider_id',
+                        'insurance_provider_name',
+                        'coverage_percentage',
+                    ],
+                ],
+            ]);
+
+        // Test searching patient by name substring or national ID
+        $searchParam = substr($patient->user->name, 0, 4);
+        $searchResponse = $this->actingAs($billingOfficer, 'sanctum')
+            ->getJson("/api/patients?search={$searchParam}");
+
+        $searchResponse->assertStatus(200);
+        $this->assertNotEmpty($searchResponse->json('data'));
+    }
 }
