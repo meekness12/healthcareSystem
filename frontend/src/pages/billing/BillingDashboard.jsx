@@ -55,6 +55,7 @@ import {
 } from "@mui/icons-material";
 import { useAuth } from "../../context/AuthContext";
 import billingApi from "../../api/billing";
+import apiClient from "../../api/client";
 import PaymentModal from "../../components/billing/PaymentModal";
 import ReceiptModal from "../../components/billing/ReceiptModal";
 
@@ -78,6 +79,8 @@ const BillingDashboard = () => {
 
   // Create Invoice Dialog State
   const [openCreateInvoice, setOpenCreateInvoice] = useState(false);
+  const [availablePatients, setAvailablePatients] = useState([]);
+  const [availableAppointments, setAvailableAppointments] = useState([]);
   const [newInvoicePatientId, setNewInvoicePatientId] = useState("");
   const [newInvoiceDueDate, setNewInvoiceDueDate] = useState(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10));
   const [newInvoiceItems, setNewInvoiceItems] = useState([
@@ -126,6 +129,26 @@ const BillingDashboard = () => {
     loadAllBillingData();
   }, [statusFilter, searchQuery, methodFilter, claimStatusFilter]);
 
+  useEffect(() => {
+    const loadDirectoryData = async () => {
+      try {
+        const [patRes, aptRes] = await Promise.allSettled([
+          apiClient.get("/patients"),
+          apiClient.get("/appointments"),
+        ]);
+        if (patRes.status === "fulfilled" && patRes.value.data?.data) {
+          setAvailablePatients(patRes.value.data.data);
+        }
+        if (aptRes.status === "fulfilled" && aptRes.value.data?.data) {
+          setAvailableAppointments(aptRes.value.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to load patient or appointment directory:", err);
+      }
+    };
+    loadDirectoryData();
+  }, []);
+
   // Calculations for KPI Cards
   const totalCollectedRwf = payments.reduce((acc, p) => acc + (Number(p.amount_rwf) || 0), 0);
   const totalBalanceDueRwf = invoices.reduce((acc, inv) => acc + (Number(inv.balance_rwf) || 0), 0);
@@ -155,7 +178,7 @@ const BillingDashboard = () => {
   const handleCreateInvoiceSubmit = async (e) => {
     e.preventDefault();
     if (!newInvoicePatientId) {
-      setFeedback({ type: "error", message: "Patient ID is required." });
+      setFeedback({ type: "error", message: "Please select a patient from the hospital directory." });
       return;
     }
 
@@ -184,7 +207,7 @@ const BillingDashboard = () => {
   const handleAutoBillSubmit = async (e) => {
     e.preventDefault();
     if (!autoBillAppointmentId) {
-      setFeedback({ type: "error", message: "Appointment ID is required." });
+      setFeedback({ type: "error", message: "Please select a completed clinical encounter to bill." });
       return;
     }
 
@@ -760,15 +783,39 @@ const BillingDashboard = () => {
             <Grid container spacing={2} sx={{ mb: 3 }}>
               <Grid item xs={12} sm={6}>
                 <TextField
-                  label="Patient ID"
+                  select
+                  label="Select Patient"
                   required
                   fullWidth
-                  type="number"
                   value={newInvoicePatientId}
                   onChange={(e) => setNewInvoicePatientId(e.target.value)}
-                  placeholder="e.g. 1 (Keza Divine)"
-                  helperText="Enter patient ID to apply insurance co-pay rates."
-                />
+                  helperText={
+                    newInvoicePatientId
+                      ? (() => {
+                          const p = availablePatients.find((pt) => String(pt.id) === String(newInvoicePatientId));
+                          return p
+                            ? `${p.name} • ${p.insurance_provider_name || "Self-Pay"} (${p.coverage_percentage}% coverage)`
+                            : "Patient insurance co-pay rate is automatically calculated.";
+                        })()
+                      : "Choose a registered patient to apply insurance coverage."
+                  }
+                >
+                  <MenuItem value="" disabled>
+                    -- Select Patient from Directory --
+                  </MenuItem>
+                  {availablePatients.map((p) => (
+                    <MenuItem key={p.id} value={p.id}>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center", gap: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {p.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {p.patient_number} {p.insurance_provider_name ? `• ${p.insurance_provider_name}` : "• Self-Pay"}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -883,14 +930,30 @@ const BillingDashboard = () => {
               Bundles the doctor's consultation fee, ordered lab diagnostics, and prescribed medicines for an appointment into an invoice with automated insurance co-pay calculations.
             </Typography>
             <TextField
-              label="Appointment ID"
+              select
+              label="Select Clinical Encounter"
               required
               fullWidth
-              type="number"
               value={autoBillAppointmentId}
               onChange={(e) => setAutoBillAppointmentId(e.target.value)}
-              placeholder="e.g. 1"
-            />
+              helperText="Choose a patient consultation to bundle doctor fees, diagnostic tests, and medications."
+            >
+              <MenuItem value="" disabled>
+                -- Select Clinical Encounter --
+              </MenuItem>
+              {availableAppointments.map((apt) => (
+                <MenuItem key={apt.id} value={apt.id}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center", gap: 2 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {apt.booking_reference || `APT-${apt.id}`} • {apt.patient?.user?.name || "Patient"}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Dr. {apt.doctor?.user?.name || "Physician"} ({apt.appointment_date})
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              ))}
+            </TextField>
           </DialogContent>
           <DialogActions sx={{ px: 3, py: 2 }}>
             <Button variant="outlined" color="inherit" onClick={() => setOpenAutoBill(false)}>

@@ -68,6 +68,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/avatar', [AuthController::class, 'uploadAvatar']);
     });
 
+    // Patient Directory (Staff & Billing Reference)
+    Route::get('/patients', [PublicDataController::class, 'patients']);
+
     // Clinical Appointments Lifecycle
     Route::prefix('appointments')->group(function () {
         Route::get('/', [AppointmentController::class, 'index']);
