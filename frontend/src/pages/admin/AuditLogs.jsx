@@ -185,7 +185,7 @@ const AuditLogs = () => {
               <TextField
                 size="small"
                 fullWidth
-                placeholder="Search action, target table, or details..."
+                placeholder="Search by action, record, or keyword..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
@@ -271,7 +271,7 @@ const AuditLogs = () => {
                 <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Action Event</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: "#475569" }}>Target Entity</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: "#475569" }}>IP Address</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700, color: "#475569" }}>Payload</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700, color: "#475569" }}>Event Details</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -314,7 +314,7 @@ const AuditLogs = () => {
                       {log.ip_address || "127.0.0.1"}
                     </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="Inspect Details Payload">
+                      <Tooltip title="View Activity Details">
                         <IconButton
                           size="small"
                           onClick={() => {
@@ -396,7 +396,7 @@ const AuditLogs = () => {
               </Grid>
 
               <Box>
-                <Typography variant="caption" color="text.secondary">Raw JSON Payload & Context</Typography>
+                <Typography variant="caption" color="text.secondary">Event Metadata & Audit Context</Typography>
                 <Paper
                   elevation={0}
                   sx={{

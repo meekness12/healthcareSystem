@@ -190,10 +190,10 @@ const ReportsExport = () => {
               <Typography variant="h5" sx={{ fontWeight: 800, color: "#0F766E" }}>
                 Executive Healthcare Network Performance Report (PDF)
               </Typography>
-              <Chip label="DomPDF Certified" size="small" sx={{ bgcolor: "#0D9488", color: "#FFFFFF", fontWeight: 700 }} />
+              <Chip label="Official Ministerial Document" size="small" sx={{ bgcolor: "#0D9488", color: "#FFFFFF", fontWeight: 700 }} />
             </Stack>
             <Typography variant="body2" sx={{ color: "#334155", maxWidth: 750 }}>
-              Formally structured executive brief formatted for Ministry of Health compliance and RP Karongi College academic evaluation.
+              Formally structured executive brief formatted for Ministry of Health compliance and RP Karongi College hospital network oversight.
               Includes high-level KPIs, provincial branch revenue aggregations, departmental workload ratios, insurance claim approvals, and director certification stamp.
             </Typography>
           </Grid>
@@ -222,7 +222,7 @@ const ReportsExport = () => {
 
       {/* CSV Datasets Grid */}
       <Typography variant="h6" sx={{ fontWeight: 800, color: "#0F172A", mb: 2 }}>
-        Operational CSV Data Streams
+        Hospital Operations & Audit Datasets (CSV)
       </Typography>
 
       <Grid container spacing={3}>
@@ -233,7 +233,7 @@ const ReportsExport = () => {
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}>
                 <CalendarToday sx={{ color: "#2563EB" }} />
                 <Typography variant="h6" sx={{ fontWeight: 700, color: "#0F172A" }}>
-                  Appointments Stream
+                  Appointments Dataset
                 </Typography>
               </Stack>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>

@@ -405,7 +405,7 @@
 
     <!-- Footer Note -->
     <div class="footer-note">
-        This document was generated automatically by the Healthcare Management System for RP Karongi College ITLAW701 assessment compliance.<br>
+        This document was generated automatically by the Integrated Healthcare Management System for RP Karongi College Hospital Network.<br>
         Confidential medical & financial data. Unauthorized reproduction or dissemination is strictly prohibited under Rwandan Data Privacy Law.
     </div>
 
