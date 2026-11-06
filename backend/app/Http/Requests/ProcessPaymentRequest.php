@@ -11,6 +11,17 @@ class ProcessPaymentRequest extends FormRequest
         return $this->user() !== null;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('payer_phone') && is_string($this->payer_phone)) {
+            // Strip any spaces, hyphens, or brackets from phone number
+            $clean = preg_replace('/[\s\-\(\)]/', '', $this->payer_phone);
+            $this->merge([
+                'payer_phone' => $clean,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
