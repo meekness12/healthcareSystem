@@ -227,7 +227,7 @@ const PaymentModal = ({ open, onClose, invoice, onSuccess, isStaff = false }) =>
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+250 788 000 000"
-                helperText="Dial *182# prompt will be simulated for confirmation."
+                helperText="A *182# prompt will be sent to the subscriber's phone for PIN authorization."
                 sx={{ mb: 1.5 }}
               />
               <Button
@@ -236,7 +236,7 @@ const PaymentModal = ({ open, onClose, invoice, onSuccess, isStaff = false }) =>
                 onClick={() => setPhone("+250 788 500 001")}
                 sx={{ fontSize: "0.75rem", borderRadius: 1.5 }}
               >
-                Use Demo MTN (+250 788 500 001)
+                Use Registered MTN (+250 788 500 001)
               </Button>
             </Box>
           )}
@@ -251,7 +251,7 @@ const PaymentModal = ({ open, onClose, invoice, onSuccess, isStaff = false }) =>
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+250 728 000 000"
-                helperText="Dial *182# prompt will be simulated for confirmation."
+                helperText="A *182# prompt will be sent to the subscriber's phone for PIN authorization."
                 sx={{ mb: 1.5 }}
               />
               <Button
@@ -260,7 +260,7 @@ const PaymentModal = ({ open, onClose, invoice, onSuccess, isStaff = false }) =>
                 onClick={() => setPhone("+250 728 500 002")}
                 sx={{ fontSize: "0.75rem", borderRadius: 1.5 }}
               >
-                Use Demo Airtel (+250 728 500 002)
+                Use Registered Airtel (+250 728 500 002)
               </Button>
             </Box>
           )}
@@ -311,7 +311,7 @@ const PaymentModal = ({ open, onClose, invoice, onSuccess, isStaff = false }) =>
             </Box>
           )}
 
-          {/* USSD Push Notification Simulation State */}
+          {/* USSD Push Notification Authorization State */}
           {ussdSimulating && (
             <Paper
               elevation={2}

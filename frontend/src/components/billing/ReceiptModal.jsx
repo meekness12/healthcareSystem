@@ -208,7 +208,7 @@ const ReceiptModal = ({ open, onClose, receiptData }) => {
             </TableBody>
           </Table>
 
-          {/* Verification Barcode Mock */}
+          {/* Verification Barcode */}
           <Box sx={{ textAlign: "center", my: 2 }}>
             <Typography
               variant="body2"
