@@ -163,9 +163,11 @@ class AnalyticsController extends Controller
             $data[] = [
                 'department_id' => $dept->id,
                 'name' => $dept->department_name,
+                'department_name' => $dept->department_name,
                 'consultation_count' => $consultationCount,
                 'appointment_count' => $appointmentCount,
                 'doctors_count' => $dept->doctors_count,
+                'doctor_count' => $dept->doctors_count,
                 'percentage' => $percentage,
             ];
         }
