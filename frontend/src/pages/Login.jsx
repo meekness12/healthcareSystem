@@ -110,7 +110,7 @@ const Login = () => {
       const backendMessage =
         err.response?.data?.errors?.email?.[0] ||
         err.response?.data?.message ||
-        "Invalid login credentials or server unreachable.";
+        "Invalid credentials or connection issue. Please try again.";
       setErrorMessage(backendMessage);
     } finally {
       setLoading(false);
@@ -193,7 +193,7 @@ const Login = () => {
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                 <Security sx={{ color: "#38bdf8", fontSize: 20 }} />
                 <Typography variant="body2" sx={{ color: "#e2e8f0" }}>
-                  Sanctum Role-Based Access Control (6 Clinical Roles)
+                  Multi-Role Hospital Access Control (6 Clinical Roles)
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -207,7 +207,7 @@ const Login = () => {
 
           <Box sx={{ pt: 3, borderTop: "1px solid rgba(255,255,255,0.12)" }}>
             <Typography variant="caption" sx={{ color: "#94a3b8", display: "block" }}>
-              RP Karongi College • ITLAW701 Advanced Web Technologies
+              RP Karongi College • Integrated Healthcare Information Network
             </Typography>
             <Typography variant="caption" sx={{ color: "#64748b" }}>
               Republic of Rwanda • Ministry of Health Compliant
@@ -222,11 +222,11 @@ const Login = () => {
               Sign In to Your Account
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Enter your official credentials or use 1-click quick demo login.
+              Enter your official credentials or use 1-click quick role selection.
             </Typography>
           </Box>
 
-          {/* 1-Click Quick Demo Login Section */}
+          {/* 1-Click Quick Role Selection Section */}
           <Box
             sx={{
               p: 2,
@@ -239,7 +239,7 @@ const Login = () => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
               <FlashOn color="primary" sx={{ fontSize: 18 }} />
               <Typography variant="caption" sx={{ fontWeight: 700, color: "primary.main", textTransform: "uppercase" }}>
-                1-Click Quick Demo Login (Evaluator Fast-Track)
+                1-Click Quick Role Selector (Demonstration & Assessment Access)
               </Typography>
             </Box>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
