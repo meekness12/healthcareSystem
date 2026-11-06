@@ -19,6 +19,10 @@ use App\Http\Controllers\Api\PharmacyController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\InsuranceClaimController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\UserManagementController;
+use App\Http\Controllers\Api\AuditLogController;
+use App\Http\Controllers\Api\ExportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -152,8 +156,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/my-schedule', [DoctorScheduleController::class, 'updateMySchedule']);
     });
 
-    // Administrative Facility Management
-    Route::prefix('admin')->group(function () {
+    // Executive Administration, Facility Management, Analytics, Users, Audit Logs, and Exports (Admin Only)
+    Route::prefix('admin')->middleware('admin')->group(function () {
+        // Facility & Provider Setup
         Route::post('/branches', [BranchController::class, 'store']);
         Route::put('/branches/{id}', [BranchController::class, 'update']);
         Route::delete('/branches/{id}', [BranchController::class, 'destroy']);
@@ -161,5 +166,37 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/departments/{id}', [DepartmentController::class, 'update']);
         Route::delete('/departments/{id}', [DepartmentController::class, 'destroy']);
         Route::put('/doctors/{id}', [DoctorController::class, 'adminUpdate']);
+
+        // Analytics & Recharts Metrics
+        Route::prefix('analytics')->group(function () {
+            Route::get('/overview', [AnalyticsController::class, 'overview']);
+            Route::get('/appointment-trends', [AnalyticsController::class, 'appointmentTrends']);
+            Route::get('/revenue-by-branch', [AnalyticsController::class, 'revenueByBranch']);
+            Route::get('/department-workloads', [AnalyticsController::class, 'departmentWorkloads']);
+            Route::get('/kpis', [AnalyticsController::class, 'kpiMetrics']);
+        });
+
+        // User Management (All 6 Roles)
+        Route::prefix('users')->group(function () {
+            Route::get('/', [UserManagementController::class, 'index']);
+            Route::post('/', [UserManagementController::class, 'store']);
+            Route::get('/{id}', [UserManagementController::class, 'show']);
+            Route::put('/{id}', [UserManagementController::class, 'update']);
+            Route::patch('/{id}/status', [UserManagementController::class, 'toggleStatus']);
+        });
+
+        // Security Audit Trail
+        Route::prefix('audit-logs')->group(function () {
+            Route::get('/', [AuditLogController::class, 'index']);
+            Route::get('/{id}', [AuditLogController::class, 'show']);
+        });
+
+        // Data & Report Exports
+        Route::prefix('export')->group(function () {
+            Route::get('/appointments-csv', [ExportController::class, 'appointmentsCsv']);
+            Route::get('/revenue-csv', [ExportController::class, 'revenueCsv']);
+            Route::get('/audit-logs-csv', [ExportController::class, 'auditLogsCsv']);
+            Route::get('/executive-report-pdf', [ExportController::class, 'executiveReportPdf']);
+        });
     });
 });

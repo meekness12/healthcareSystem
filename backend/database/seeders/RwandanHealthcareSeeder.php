@@ -18,6 +18,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
 use App\Models\InsuranceClaim;
+use App\Models\AuditLog;
 
 class RwandanHealthcareSeeder extends Seeder
 {
@@ -580,6 +581,94 @@ class RwandanHealthcareSeeder extends Seeder
                 'claim_status' => 'under_review',
                 'submitted_at' => now()->subHours(2),
             ]);
+        }
+
+        // 13. Security Audit Trail Entries
+        $auditLogs = [
+            [
+                'user_id' => $admin->id,
+                'action' => 'system_initialized',
+                'target_table' => 'hospital_branches',
+                'target_id' => $createdBranches[0]->id,
+                'details' => ['message' => '5 provincial hospital branches activated across Rwanda'],
+                'ip_address' => '127.0.0.1',
+                'created_at' => now()->subDays(10),
+                'updated_at' => now()->subDays(10),
+            ],
+            [
+                'user_id' => $admin->id,
+                'action' => 'user_created',
+                'target_table' => 'users',
+                'target_id' => $doc1User->id,
+                'details' => ['role' => 'doctor', 'name' => $doc1User->name, 'branch' => 'Karongi Referral Hospital Branch'],
+                'ip_address' => '127.0.0.1',
+                'created_at' => now()->subDays(9),
+                'updated_at' => now()->subDays(9),
+            ],
+            [
+                'user_id' => $admin->id,
+                'action' => 'user_created',
+                'target_table' => 'users',
+                'target_id' => $doc2User->id,
+                'details' => ['role' => 'doctor', 'name' => $doc2User->name, 'branch' => 'Kigali Central Hospital Branch'],
+                'ip_address' => '127.0.0.1',
+                'created_at' => now()->subDays(8),
+                'updated_at' => now()->subDays(8),
+            ],
+            [
+                'user_id' => $pat1User->id,
+                'action' => 'auth_login',
+                'target_table' => 'users',
+                'target_id' => $pat1User->id,
+                'details' => ['device' => 'Mozilla/5.0 Mobile (Android; Kigali)'],
+                'ip_address' => '197.243.20.12',
+                'created_at' => now()->subDays(3),
+                'updated_at' => now()->subDays(3),
+            ],
+            [
+                'user_id' => $doc1User->id,
+                'action' => 'consultation_recorded',
+                'target_table' => 'consultations',
+                'target_id' => 1,
+                'details' => ['diagnosis' => 'Clinical consultation completed with prescription'],
+                'ip_address' => '197.243.20.15',
+                'created_at' => now()->subDays(2),
+                'updated_at' => now()->subDays(2),
+            ],
+            [
+                'user_id' => $billing->id,
+                'action' => 'payment_processed',
+                'target_table' => 'payments',
+                'target_id' => 1,
+                'details' => ['method' => 'momo', 'amount_rwf' => 2250, 'provider' => 'MTN Mobile Money *182#'],
+                'ip_address' => '127.0.0.1',
+                'created_at' => now()->subDay(),
+                'updated_at' => now()->subDay(),
+            ],
+            [
+                'user_id' => $admin->id,
+                'action' => 'user_status_toggled',
+                'target_table' => 'users',
+                'target_id' => $pat2User->id,
+                'details' => ['previous_status' => 'inactive', 'new_status' => 'active'],
+                'ip_address' => '127.0.0.1',
+                'created_at' => now()->subHours(8),
+                'updated_at' => now()->subHours(8),
+            ],
+            [
+                'user_id' => $admin->id,
+                'action' => 'export_executive_report_pdf',
+                'target_table' => 'analytics',
+                'target_id' => null,
+                'details' => ['format' => 'pdf', 'scope' => 'all_branches'],
+                'ip_address' => '127.0.0.1',
+                'created_at' => now()->subHours(2),
+                'updated_at' => now()->subHours(2),
+            ],
+        ];
+
+        foreach ($auditLogs as $entry) {
+            AuditLog::create($entry);
         }
     }
 }
