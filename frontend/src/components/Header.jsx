@@ -32,6 +32,9 @@ import {
   LocalPharmacy,
   Payments,
   ReceiptLong,
+  People,
+  Security,
+  TrendingUp,
 } from "@mui/icons-material";
 import { useThemeMode } from "../theme/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -284,6 +287,29 @@ const Header = () => {
                     </ListItemIcon>
                     <ListItemText primary="Billing & Revenue Console" />
                   </MenuItem>
+                )}
+
+                {user.role === "admin" && (
+                  <>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/admin/users"); }}>
+                      <ListItemIcon>
+                        <People fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="Staff & User Governance" />
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/admin/audit-logs"); }}>
+                      <ListItemIcon>
+                        <Security fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="Security Audit Trail" />
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/admin/reports"); }}>
+                      <ListItemIcon>
+                        <TrendingUp fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="Executive Reports & Export" />
+                    </MenuItem>
+                  </>
                 )}
 
                 {user.role === "patient" && (

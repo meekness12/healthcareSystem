@@ -1,4 +1,4 @@
-import api from "./auth";
+import api from "./client";
 
 export const billingApi = {
   // Invoices

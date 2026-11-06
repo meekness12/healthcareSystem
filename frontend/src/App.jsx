@@ -9,6 +9,9 @@ import ProfileSettings from "./pages/profile/ProfileSettings";
 import BranchDirectory from "./pages/branches/BranchDirectory";
 import DoctorDirectory from "./pages/doctors/DoctorDirectory";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import AuditLogs from "./pages/admin/AuditLogs";
+import ReportsExport from "./pages/admin/ReportsExport";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import DoctorScheduleManager from "./pages/doctor/DoctorScheduleManager";
 import DoctorAppointments from "./pages/doctor/DoctorAppointments";
@@ -51,10 +54,38 @@ function App() {
 
             {/* Admin routes */}
             <Route
+              path="/admin"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
+            <Route
               path="/admin/dashboard"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/audit-logs"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AuditLogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/reports"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ReportsExport />
                 </ProtectedRoute>
               }
             />
