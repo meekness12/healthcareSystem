@@ -220,7 +220,7 @@ const UserManagement = () => {
       }
 
       await adminApi.createUser(payload);
-      setSuccessMsg(`Account for ${formData.name} (${formData.role}) provisioned successfully.`);
+      setSuccessMsg(`Account for ${formData.name} (${formData.role}) created successfully.`);
       setOpenCreateModal(false);
       fetchUsers();
     } catch (err) {
@@ -276,7 +276,7 @@ const UserManagement = () => {
               Staff & Patient Management Console
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Centralized identity governance, role provisioning, and account status administration.
+              Centralized identity governance, staff account management, and status administration.
             </Typography>
           </Grid>
           <Grid item xs={12} md={5} sx={{ textAlign: { xs: "left", md: "right" } }}>
@@ -286,7 +286,7 @@ const UserManagement = () => {
               onClick={() => setOpenCreateModal(true)}
               sx={{ bgcolor: "#0D9488", "&:hover": { bgcolor: "#0F766E" }, fontWeight: 700 }}
             >
-              Provision New Account
+              Register New Account
             </Button>
           </Grid>
         </Grid>
@@ -491,11 +491,11 @@ const UserManagement = () => {
         />
       </Paper>
 
-      {/* Provision Account Modal */}
+      {/* Create Account Modal */}
       <Dialog open={openCreateModal} onClose={() => setOpenCreateModal(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Typography variant="h6" sx={{ fontWeight: 800 }}>
-            Provision New System Account
+            Register New Hospital Account
           </Typography>
           <IconButton onClick={() => setOpenCreateModal(false)} size="small">
             <Close />
@@ -762,7 +762,7 @@ const UserManagement = () => {
               disabled={creating}
               sx={{ bgcolor: "#0D9488", "&:hover": { bgcolor: "#0F766E" }, fontWeight: 700 }}
             >
-              {creating ? <CircularProgress size={20} color="inherit" /> : "Save & Provision Account"}
+              {creating ? <CircularProgress size={20} color="inherit" /> : "Save & Register Account"}
             </Button>
           </DialogActions>
         </form>

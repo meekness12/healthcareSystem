@@ -73,7 +73,7 @@ const MyAppointments = () => {
       }
     } catch (err) {
       console.error("Failed to fetch appointments:", err);
-      setFeedback({ type: "error", message: "Failed to load appointments from server." });
+      setFeedback({ type: "error", message: "Unable to load appointments. Please refresh or try again." });
     } finally {
       setLoading(false);
     }

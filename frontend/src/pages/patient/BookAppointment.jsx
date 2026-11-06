@@ -454,7 +454,7 @@ const BookAppointment = () => {
             Appointment Confirmed!
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Your clinical consultation voucher has been generated and registered in the hospital database.
+            Your clinical consultation voucher has been generated and registered in official hospital records.
           </Typography>
         </DialogTitle>
 
