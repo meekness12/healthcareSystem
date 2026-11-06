@@ -14,6 +14,10 @@ use App\Models\Doctor;
 use App\Models\DoctorSchedule;
 use App\Models\Medicine;
 use App\Models\LabTestType;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\Payment;
+use App\Models\InsuranceClaim;
 
 class RwandanHealthcareSeeder extends Seeder
 {
@@ -372,7 +376,7 @@ class RwandanHealthcareSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        Patient::create([
+        $patient2 = Patient::create([
             'user_id' => $pat2User->id,
             'patient_number' => 'PAT-2026-0002',
             'dob' => '1994-11-23',
@@ -386,5 +390,196 @@ class RwandanHealthcareSeeder extends Seeder
             'allergies' => 'None known',
             'medical_history' => 'Fracture of left tibia in 2021 (fully resolved)',
         ]);
+
+        $patient1 = Patient::where('user_id', $pat1User->id)->first();
+
+        // 7. Seed Demo Invoices, Payments, and Insurance Claims
+        if ($patient1) {
+            // Invoice 1: Paid via MTN MoMo
+            $inv1 = Invoice::create([
+                'patient_id' => $patient1->id,
+                'invoice_number' => 'INV-202611-00001',
+                'subtotal_rwf' => 9100.00,
+                'discount_rwf' => 0.00,
+                'insurance_covered_rwf' => 7735.00, // 85% RSSB
+                'total_amount_rwf' => 1365.00,
+                'amount_paid_rwf' => 1365.00,
+                'balance_rwf' => 0.00,
+                'due_date' => now()->toDateString(),
+                'status' => 'paid',
+            ]);
+
+            InvoiceItem::insert([
+                [
+                    'invoice_id' => $inv1->id,
+                    'item_description' => 'Clinical Consultation: General Medicine',
+                    'item_type' => 'consultation',
+                    'reference_id' => null,
+                    'quantity' => 1,
+                    'unit_price_rwf' => 5000.00,
+                    'total_price_rwf' => 5000.00,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'invoice_id' => $inv1->id,
+                    'item_description' => 'Laboratory Diagnostics: Malaria Rapid Diagnostic Test (RDT)',
+                    'item_type' => 'lab_test',
+                    'reference_id' => null,
+                    'quantity' => 1,
+                    'unit_price_rwf' => 3500.00,
+                    'total_price_rwf' => 3500.00,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'invoice_id' => $inv1->id,
+                    'item_description' => 'Pharmacy: Paracetamol 500mg (10 Tabs)',
+                    'item_type' => 'medicine',
+                    'reference_id' => null,
+                    'quantity' => 2,
+                    'unit_price_rwf' => 300.00,
+                    'total_price_rwf' => 600.00,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+
+            Payment::create([
+                'invoice_id' => $inv1->id,
+                'patient_id' => $patient1->id,
+                'transaction_reference' => 'MOMO-261106-90412',
+                'amount_rwf' => 1365.00,
+                'payment_method' => 'momo',
+                'payer_phone' => '+250 788 500 001',
+                'payment_status' => 'successful',
+                'paid_at' => now()->subHours(3),
+            ]);
+
+            InsuranceClaim::create([
+                'patient_id' => $patient1->id,
+                'invoice_id' => $inv1->id,
+                'provider_id' => $createdInsurers[0]->id, // RSSB
+                'claim_reference' => 'CLM-202611-90412',
+                'claimed_amount_rwf' => 7735.00,
+                'approved_amount_rwf' => 7735.00,
+                'claim_status' => 'approved',
+                'submitted_at' => now()->subHours(4),
+                'processed_at' => now()->subHours(2),
+            ]);
+
+            // Invoice 2: Unpaid Ultrasound Co-Pay
+            $inv2 = Invoice::create([
+                'patient_id' => $patient1->id,
+                'invoice_number' => 'INV-202611-00002',
+                'subtotal_rwf' => 15000.00,
+                'discount_rwf' => 0.00,
+                'insurance_covered_rwf' => 12750.00,
+                'total_amount_rwf' => 2250.00,
+                'amount_paid_rwf' => 0.00,
+                'balance_rwf' => 2250.00,
+                'due_date' => now()->addDays(7)->toDateString(),
+                'status' => 'unpaid',
+            ]);
+
+            InvoiceItem::insert([
+                [
+                    'invoice_id' => $inv2->id,
+                    'item_description' => 'Diagnostic Imaging: Abdominal Ultrasound',
+                    'item_type' => 'procedure',
+                    'reference_id' => null,
+                    'quantity' => 1,
+                    'unit_price_rwf' => 15000.00,
+                    'total_price_rwf' => 15000.00,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+
+            InsuranceClaim::create([
+                'patient_id' => $patient1->id,
+                'invoice_id' => $inv2->id,
+                'provider_id' => $createdInsurers[0]->id, // RSSB
+                'claim_reference' => 'CLM-202611-12750',
+                'claimed_amount_rwf' => 12750.00,
+                'approved_amount_rwf' => 0.00,
+                'claim_status' => 'submitted',
+                'submitted_at' => now()->subHour(),
+            ]);
+        }
+
+        if ($patient2) {
+            // Invoice 3: Partially Paid via Airtel Money
+            $inv3 = Invoice::create([
+                'patient_id' => $patient2->id,
+                'invoice_number' => 'INV-202611-00003',
+                'subtotal_rwf' => 11900.00,
+                'discount_rwf' => 0.00,
+                'insurance_covered_rwf' => 10710.00, // 90% CBHI
+                'total_amount_rwf' => 1190.00,
+                'amount_paid_rwf' => 500.00,
+                'balance_rwf' => 690.00,
+                'due_date' => now()->addDays(5)->toDateString(),
+                'status' => 'partially_paid',
+            ]);
+
+            InvoiceItem::insert([
+                [
+                    'invoice_id' => $inv3->id,
+                    'item_description' => 'Clinical Consultation: Pediatric Review',
+                    'item_type' => 'consultation',
+                    'reference_id' => null,
+                    'quantity' => 1,
+                    'unit_price_rwf' => 5000.00,
+                    'total_price_rwf' => 5000.00,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'invoice_id' => $inv3->id,
+                    'item_description' => 'Laboratory Diagnostics: Complete Blood Count (CBC)',
+                    'item_type' => 'lab_test',
+                    'reference_id' => null,
+                    'quantity' => 1,
+                    'unit_price_rwf' => 4500.00,
+                    'total_price_rwf' => 4500.00,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'invoice_id' => $inv3->id,
+                    'item_description' => 'Pharmacy: Amoxicillin 500mg Capsules',
+                    'item_type' => 'medicine',
+                    'reference_id' => null,
+                    'quantity' => 1,
+                    'unit_price_rwf' => 2400.00,
+                    'total_price_rwf' => 2400.00,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+
+            Payment::create([
+                'invoice_id' => $inv3->id,
+                'patient_id' => $patient2->id,
+                'transaction_reference' => 'AIRTEL-261106-44123',
+                'amount_rwf' => 500.00,
+                'payment_method' => 'airtel_money',
+                'payer_phone' => '+250 788 500 002',
+                'payment_status' => 'successful',
+                'paid_at' => now()->subHours(1),
+            ]);
+
+            InsuranceClaim::create([
+                'patient_id' => $patient2->id,
+                'invoice_id' => $inv3->id,
+                'provider_id' => $createdInsurers[1]->id, // CBHI
+                'claim_reference' => 'CLM-202611-10710',
+                'claimed_amount_rwf' => 10710.00,
+                'approved_amount_rwf' => 0.00,
+                'claim_status' => 'under_review',
+                'submitted_at' => now()->subHours(2),
+            ]);
+        }
     }
 }

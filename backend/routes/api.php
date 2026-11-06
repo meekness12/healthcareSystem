@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\ConsultationController;
 use App\Http\Controllers\Api\MedicalRecordFileController;
 use App\Http\Controllers\Api\LabTestController;
 use App\Http\Controllers\Api\PharmacyController;
+use App\Http\Controllers\Api\InvoiceController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\InsuranceClaimController;
 
 /*
 |--------------------------------------------------------------------------
@@ -115,6 +118,33 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/dispense', [PharmacyController::class, 'dispense']);
         Route::get('/inventory', [PharmacyController::class, 'inventory']);
         Route::get('/history', [PharmacyController::class, 'history']);
+    });
+
+    // Invoicing & Revenue Management
+    Route::prefix('invoices')->group(function () {
+        Route::get('/', [InvoiceController::class, 'index']);
+        Route::post('/', [InvoiceController::class, 'store']);
+        Route::get('/{id}', [InvoiceController::class, 'show']);
+        Route::post('/generate-from-appointment/{appointmentId}', [InvoiceController::class, 'generateFromAppointment']);
+        Route::get('/{id}/pdf', [InvoiceController::class, 'downloadPdf']);
+    });
+
+    // Payments & Checkout Workflow
+    Route::prefix('payments')->group(function () {
+        Route::get('/', [PaymentController::class, 'index']);
+        Route::post('/', [PaymentController::class, 'store']);
+        Route::get('/{id}', [PaymentController::class, 'show']);
+        Route::get('/{id}/receipt', [PaymentController::class, 'receipt']);
+        Route::get('/{id}/receipt/pdf', [PaymentController::class, 'downloadReceiptPdf']);
+    });
+
+    // Insurance Claims & Adjudication
+    Route::prefix('insurance-claims')->group(function () {
+        Route::get('/', [InsuranceClaimController::class, 'index']);
+        Route::get('/stats', [InsuranceClaimController::class, 'stats']);
+        Route::post('/', [InsuranceClaimController::class, 'store']);
+        Route::get('/{id}', [InsuranceClaimController::class, 'show']);
+        Route::patch('/{id}/status', [InsuranceClaimController::class, 'updateStatus']);
     });
 
     // Doctor Clinical Controls
