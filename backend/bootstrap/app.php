@@ -12,7 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->statefulApi();
+        // Stateless Bearer token API: Sanctum personal access tokens are stored in frontend localStorage
+        // and transmitted via Authorization headers. Stateful session CSRF cookie validation is disabled.
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdminRole::class,
         ]);
