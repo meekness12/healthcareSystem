@@ -56,6 +56,15 @@ Route::get('/doctors/{id}/available-slots', [DoctorScheduleController::class, 'a
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+
+    // Password Reset via OTP
+    Route::post('/forgot-password/send-otp', [AuthController::class, 'sendPasswordResetOtp']);
+    Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyPasswordResetOtp']);
+    Route::post('/forgot-password/reset', [AuthController::class, 'resetPasswordWithOtp']);
+
+    // Registration Email Verification via OTP
+    Route::post('/verify-email-otp', [AuthController::class, 'verifyEmailOtp']);
+    Route::post('/resend-email-otp', [AuthController::class, 'resendEmailOtp']);
 });
 
 // Protected Routes (Sanctum Bearer Token)

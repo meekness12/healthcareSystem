@@ -8,18 +8,31 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\AvatarUploadRequest;
+use App\Http\Requests\SendOtpRequest;
+use App\Http\Requests\VerifyOtpRequest;
+use App\Http\Requests\ResetPasswordWithOtpRequest;
 use App\Http\Resources\UserResource;
+use App\Mail\UserWelcomeVerificationMail;
+use App\Mail\PasswordResetOtpMail;
+use App\Mail\PasswordResetSuccessMail;
 use App\Models\User;
 use App\Models\Patient;
+use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        protected OtpService $otpService
+    ) {}
+
     /**
      * Patient Self-Registration with Automatic Demographic & Insurance Profiling.
      */
@@ -64,11 +77,22 @@ class AuthController extends Controller
         $user->load(['patient.insuranceProvider']);
         $token = $user->createToken('patient_auth_token')->plainTextToken;
 
+        // Generate and dispatch welcome verification OTP email
+        $otpCode = null;
+        try {
+            $otpCode = $this->otpService->generateOtp($user->email, 'email_verification', 15);
+            Mail::to($user->email)->send(new UserWelcomeVerificationMail($user, $user->patient, $otpCode, 15));
+        } catch (\Throwable $e) {
+            Log::warning("Failed to dispatch registration welcome email to {$user->email}: " . $e->getMessage());
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Registration successful! Welcome to Healthcare System Rwanda.',
             'token' => $token,
             'user' => new UserResource($user),
+            'otp_sent' => $otpCode !== null,
+            'patient_number' => $user->patient?->patient_number,
         ], 201);
     }
 
@@ -246,6 +270,173 @@ class AuthController extends Controller
             'message' => 'Profile photograph uploaded successfully.',
             'avatar_url' => asset('storage/' . $path),
             'user' => new UserResource($user),
+        ]);
+    }
+
+    /**
+     * Request Password Reset OTP Code via Email.
+     */
+    public function sendPasswordResetOtp(SendOtpRequest $request): JsonResponse
+    {
+        $email = strtolower(trim($request->validated()['email']));
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No active hospital account was found with that email address.',
+            ], 404);
+        }
+
+        if ($user->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account is currently inactive. Please contact hospital administration.',
+            ], 403);
+        }
+
+        try {
+            $otp = $this->otpService->generateOtp($email, 'password_reset', 10);
+            Mail::to($email)->send(new PasswordResetOtpMail($user, $otp, 10));
+        } catch (ValidationException $ve) {
+            throw $ve;
+        } catch (\Throwable $e) {
+            Log::error("Failed to send password reset OTP to {$email}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to dispatch security code email at this moment. Please try again shortly.',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "A 6-digit verification code has been dispatched to {$email}. Please check your inbox and spam folder.",
+        ]);
+    }
+
+    /**
+     * Verify 6-digit Password Reset OTP Code and Mint Single-Use Reset Token.
+     */
+    public function verifyPasswordResetOtp(VerifyOtpRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $result = $this->otpService->verifyOtp($validated['email'], $validated['otp_code'], 'password_reset');
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message'],
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $result['message'],
+            'reset_token' => $result['reset_token'],
+        ]);
+    }
+
+    /**
+     * Reset User Password with Validated Single-Use Reset Token.
+     */
+    public function resetPasswordWithOtp(ResetPasswordWithOtpRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $email = strtolower(trim($validated['email']));
+
+        $consumed = $this->otpService->consumeResetToken($email, $validated['reset_token']);
+        if (!$consumed) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The password reset token is invalid or has already been used. Please verify your OTP code again.',
+            ], 422);
+        }
+
+        $user = User::where('email', $email)->first();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User account not found.',
+            ], 404);
+        }
+
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        // Dispatch security confirmation alert email
+        try {
+            Mail::to($user->email)->send(new PasswordResetSuccessMail($user));
+        } catch (\Throwable $e) {
+            Log::warning("Failed to send password reset confirmation email to {$email}: " . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Your password has been successfully reset. You may now sign in with your new credentials.',
+        ]);
+    }
+
+    /**
+     * Verify Patient Email Address with 6-digit Registration OTP Code.
+     */
+    public function verifyEmailOtp(VerifyOtpRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        $result = $this->otpService->verifyOtp($validated['email'], $validated['otp_code'], 'email_verification');
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message'],
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $result['message'],
+        ]);
+    }
+
+    /**
+     * Resend Patient Registration Email Verification OTP.
+     */
+    public function resendEmailOtp(SendOtpRequest $request): JsonResponse
+    {
+        $email = strtolower(trim($request->validated()['email']));
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Account not found.',
+            ], 404);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Your email address is already verified.',
+                'already_verified' => true,
+            ]);
+        }
+
+        try {
+            $otp = $this->otpService->generateOtp($email, 'email_verification', 15);
+            $user->load('patient');
+            Mail::to($email)->send(new UserWelcomeVerificationMail($user, $user->patient, $otp, 15));
+        } catch (ValidationException $ve) {
+            throw $ve;
+        } catch (\Throwable $e) {
+            Log::error("Failed to resend registration OTP to {$email}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to dispatch verification code at this moment. Please try again shortly.',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "A fresh verification code has been dispatched to {$email}.",
         ]);
     }
 }
