@@ -19,14 +19,15 @@ A national-tier, enterprise-grade Rwandan Healthcare Management & Clinical Workf
   - Multi-payer health insurance calculation (RAMA, Mutuelle de Santé, MMI, Radiant, Sanlam) with verified co-pay percentages.
   - Authentic mobile payment checkout workflows (MTN MoMo `*182#` & Airtel Money `*500#`), debit card, and cash ledger.
   - Multi-branch provincial infrastructure (Kigali Central, Butare University Teaching, Ruhengeri Referral, Karongi Provincial, Rwamagana Provincial).
+  - Automated Ministerial-Branded Email & OTP Service (Gmail SMTP) for patient onboarding, unique `PAT-2026-XXXX` registration verification, and 3-step Forgot Password recovery.
 
 ---
 
 ## Technology Stack
 
-- **Backend**: Laravel 11.x (PHP 8.2+), Laravel Sanctum (Token Authentication), Eloquent ORM, DomPDF (Ministerial PDF generator), MySQL / MariaDB (Strict 3NF schema across 25 tables).
+- **Backend**: Laravel 11.x (PHP 8.2+), Laravel Sanctum (Token Authentication), Eloquent ORM, DomPDF (Ministerial PDF generator), Symfony Mailer / Gmail SMTP, MySQL / MariaDB (Strict 3NF schema across 26 tables).
 - **Frontend**: React 19, Vite, Material-UI (MUI 6), Recharts (Executive visualizer), Axios (Sanctum interceptors), Lucide / MUI Icons.
-- **Automated Quality Assurance**: PHPUnit / Laravel Test Suite (75 automated feature tests, 758 assertions, 100% pass rate).
+- **Automated Quality Assurance**: PHPUnit / Laravel Test Suite (84 automated feature tests, 793 assertions, 100% pass rate).
 
 ---
 
@@ -122,8 +123,8 @@ php artisan test
 ```
 **Test Results**:
 ```
-Tests:    75 passed (758 assertions)
-Duration: ~15s
+Tests:    84 passed (793 assertions)
+Duration: ~33s
 Status:   100% Green
 ```
 
