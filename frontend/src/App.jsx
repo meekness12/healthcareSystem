@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import ProfileSettings from "./pages/profile/ProfileSettings";
 import BranchDirectory from "./pages/branches/BranchDirectory";
 import DoctorDirectory from "./pages/doctors/DoctorDirectory";
@@ -39,6 +40,7 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/branches" element={<BranchDirectory />} />
             <Route path="/doctors" element={<DoctorDirectory />} />
 

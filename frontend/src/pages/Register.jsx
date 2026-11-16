@@ -35,6 +35,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import authApi from "../api/auth";
+import EmailVerificationModal from "../components/auth/EmailVerificationModal";
 
 const Register = () => {
   const theme = useTheme();
@@ -47,6 +48,11 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+
+  // Verification Modal State
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [assignedPatientNumber, setAssignedPatientNumber] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -117,8 +123,10 @@ const Register = () => {
         allergies: formData.allergies || null,
       };
 
-      await register(payload);
-      navigate("/patient/dashboard", { replace: true });
+      const result = await register(payload);
+      setRegisteredEmail(formData.email);
+      setAssignedPatientNumber(result?.patient_number || result?.user?.patient?.patient_number || "");
+      setShowVerifyModal(true);
     } catch (err) {
       console.error("Registration error:", err);
       if (err.response?.status === 422 && err.response.data?.errors) {
@@ -564,6 +572,23 @@ const Register = () => {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Post-Registration Email Verification Dialog */}
+      {showVerifyModal && (
+        <EmailVerificationModal
+          open={showVerifyModal}
+          email={registeredEmail}
+          patientNumber={assignedPatientNumber}
+          onClose={() => {
+            setShowVerifyModal(false);
+            navigate("/patient/dashboard", { replace: true });
+          }}
+          onVerified={() => {
+            setShowVerifyModal(false);
+            navigate("/patient/dashboard", { replace: true });
+          }}
+        />
+      )}
     </Box>
   );
 };

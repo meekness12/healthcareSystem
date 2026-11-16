@@ -57,6 +57,33 @@ export const authApi = {
     const response = await apiClient.get("/insurance-providers");
     return response.data;
   },
+
+  // Password Recovery via OTP
+  forgotPasswordSendOtp: async (email) => {
+    const response = await apiClient.post("/auth/forgot-password/send-otp", { email });
+    return response.data;
+  },
+
+  forgotPasswordVerifyOtp: async (email, otp_code) => {
+    const response = await apiClient.post("/auth/forgot-password/verify-otp", { email, otp_code });
+    return response.data;
+  },
+
+  forgotPasswordReset: async (payload) => {
+    const response = await apiClient.post("/auth/forgot-password/reset", payload);
+    return response.data;
+  },
+
+  // Registration Email Verification via OTP
+  verifyEmailOtp: async (email, otp_code) => {
+    const response = await apiClient.post("/auth/verify-email-otp", { email, otp_code });
+    return response.data;
+  },
+
+  resendEmailOtp: async (email) => {
+    const response = await apiClient.post("/auth/resend-email-otp", { email });
+    return response.data;
+  },
 };
 
 export default authApi;

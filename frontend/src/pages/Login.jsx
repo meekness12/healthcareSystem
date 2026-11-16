@@ -53,6 +53,12 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedDemoRole, setSelectedDemoRole] = useState(null);
 
+  React.useEffect(() => {
+    if (location.state?.prefillEmail) {
+      setFormData((prev) => ({ ...prev, email: location.state.prefillEmail }));
+    }
+  }, [location.state]);
+
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (errorMessage) setErrorMessage("");
@@ -320,8 +326,22 @@ const Login = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 3 }}
+              sx={{ mb: 1.5 }}
             />
+
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2.5 }}>
+              <Link
+                to="/forgot-password"
+                style={{
+                  color: theme.palette.primary.main,
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                Forgot Password?
+              </Link>
+            </Box>
 
             <Button
               type="submit"

@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authApi.register(payload);
       persistSession(data.token, data.user);
-      return data.user;
+      return data;
     } finally {
       setLoading(false);
     }
