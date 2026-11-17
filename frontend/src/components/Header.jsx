@@ -3,99 +3,31 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  IconButton,
-  Box,
-  Tooltip,
-  Chip,
   Button,
+  Box,
+  IconButton,
   Avatar,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
+  Tooltip,
 } from "@mui/material";
 import {
+  LocalHospital,
   Brightness4,
   Brightness7,
-  LocalHospital,
-  AccountCircle,
-  Settings,
-  Logout,
-  Dashboard,
-  EventAvailable,
-  EventNote,
-  BookOnline,
   Warning,
-  HistoryEdu,
-  Science,
-  LocalPharmacy,
-  Payments,
-  ReceiptLong,
-  People,
-  Security,
-  TrendingUp,
+  Menu as MenuIcon,
 } from "@mui/icons-material";
 import { useThemeMode } from "../theme/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getRoleDashboardPath } from "../utils/roles";
+import SidebarDrawer from "./SidebarDrawer";
 
 const Header = () => {
   const { mode, toggleColorMode } = useThemeMode();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const openMenu = Boolean(anchorEl);
-
-  const handleOpenMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const handleProfileClick = () => {
-    handleCloseMenu();
-    navigate("/profile");
-  };
-
-  const handleDashboardClick = () => {
-    handleCloseMenu();
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    switch (user.role) {
-      case "admin":
-        navigate("/admin/dashboard");
-        break;
-      case "doctor":
-        navigate("/doctor/dashboard");
-        break;
-      case "patient":
-        navigate("/patient/dashboard");
-        break;
-      case "lab_technician":
-        navigate("/lab/dashboard");
-        break;
-      case "pharmacist":
-        navigate("/pharmacy/dashboard");
-        break;
-      case "billing_officer":
-        navigate("/billing/dashboard");
-        break;
-      default:
-        navigate("/");
-    }
-  };
-
-  const handleLogout = async () => {
-    handleCloseMenu();
-    await logout();
-    navigate("/login");
-  };
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <AppBar
@@ -110,10 +42,34 @@ const Header = () => {
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
         {/* Brand & Hospital Network */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, md: 3 } }}>
+          {isAuthenticated && user && (
+            <Tooltip title="Open Left Navigation Menu">
+              <IconButton
+                color="inherit"
+                edge="start"
+                onClick={() => setSidebarOpen(true)}
+                sx={{
+                  mr: 0.5,
+                  p: 1,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  borderRadius: 2,
+                  "&:hover": { bgcolor: "action.hover", color: "primary.main" },
+                }}
+                aria-label="Open sidebar menu"
+              >
+                <MenuIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+
           <Box
             sx={{ display: "flex", alignItems: "center", gap: 1.5, cursor: "pointer" }}
-            onClick={() => (isAuthenticated ? handleDashboardClick() : navigate("/"))}
+            onClick={() =>
+              isAuthenticated && user
+                ? navigate(getRoleDashboardPath(user.role))
+                : navigate("/")
+            }
           >
             <LocalHospital color="primary" sx={{ fontSize: 32 }} />
             <Box>
@@ -169,25 +125,36 @@ const Header = () => {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           {isAuthenticated && user ? (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Tooltip title="Open User Menu">
+              <Tooltip title="Click to open Navigation Menu">
                 <Box
-                  onClick={handleOpenMenu}
+                  onClick={() => setSidebarOpen(true)}
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 1,
+                    gap: 1.2,
                     cursor: "pointer",
-                    p: 0.5,
-                    borderRadius: 2,
-                    "&:hover": { bgcolor: "action.hover" },
+                    p: 0.6,
+                    px: 1.2,
+                    borderRadius: 2.5,
+                    border: (theme) => `1px solid ${theme.palette.divider}`,
+                    bgcolor: (theme) =>
+                      theme.palette.mode === "dark"
+                        ? "rgba(255,255,255,0.03)"
+                        : "rgba(0,121,107,0.04)",
+                    transition: "all 0.15s ease-in-out",
+                    "&:hover": {
+                      bgcolor: "action.hover",
+                      borderColor: "primary.main",
+                      boxShadow: 1,
+                    },
                   }}
                 >
                   <Avatar
                     src={user.avatar_url || undefined}
                     alt={user.name}
                     sx={{
-                      width: 36,
-                      height: 36,
+                      width: 34,
+                      height: 34,
                       bgcolor: "primary.main",
                       fontSize: "0.95rem",
                       fontWeight: 700,
@@ -199,164 +166,16 @@ const Header = () => {
                     <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
                       {user.name}
                     </Typography>
-                    <Typography variant="caption" color="primary" sx={{ fontWeight: 600, textTransform: "capitalize" }}>
-                      {user.role}
+                    <Typography
+                      variant="caption"
+                      color="primary"
+                      sx={{ fontWeight: 700, textTransform: "capitalize" }}
+                    >
+                      {user.role?.replace("_", " ")}
                     </Typography>
                   </Box>
                 </Box>
               </Tooltip>
-
-              <Menu
-                anchorEl={anchorEl}
-                id="account-menu"
-                open={openMenu}
-                onClose={handleCloseMenu}
-                PaperProps={{
-                  elevation: 4,
-                  sx: {
-                    minWidth: 200,
-                    borderRadius: 2,
-                    mt: 1.5,
-                  },
-                }}
-                transformOrigin={{ horizontal: "right", vertical: "top" }}
-                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-              >
-                <Box sx={{ px: 2, py: 1.5 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                    {user.name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block" }}>
-                    {user.email}
-                  </Typography>
-                  <Chip
-                    label={user.role?.toUpperCase()}
-                    color="primary"
-                    size="small"
-                    sx={{ mt: 1, fontWeight: 700, fontSize: "0.7rem" }}
-                  />
-                </Box>
-                <Divider />
-
-                <MenuItem onClick={handleDashboardClick}>
-                  <ListItemIcon>
-                    <Dashboard fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary="Dashboard" />
-                </MenuItem>
-
-                {["doctor", "admin"].includes(user.role) && (
-                  <>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/doctor/appointments"); }}>
-                      <ListItemIcon>
-                        <EventNote fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="Appointments Queue" />
-                    </MenuItem>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/doctor/schedule"); }}>
-                      <ListItemIcon>
-                        <EventAvailable fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="My Availability Schedule" />
-                    </MenuItem>
-                  </>
-                )}
-
-                {["lab_technician", "admin"].includes(user.role) && (
-                  <MenuItem onClick={() => { handleCloseMenu(); navigate("/lab/dashboard"); }}>
-                    <ListItemIcon>
-                      <Science fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary="Laboratory Workspace" />
-                  </MenuItem>
-                )}
-
-                {["pharmacist", "admin"].includes(user.role) && (
-                  <MenuItem onClick={() => { handleCloseMenu(); navigate("/pharmacy/dashboard"); }}>
-                    <ListItemIcon>
-                      <LocalPharmacy fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary="Dispensary Console" />
-                  </MenuItem>
-                )}
-
-                {["billing_officer", "admin"].includes(user.role) && (
-                  <MenuItem onClick={() => { handleCloseMenu(); navigate("/billing/dashboard"); }}>
-                    <ListItemIcon>
-                      <Payments fontSize="small" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary="Billing & Revenue Console" />
-                  </MenuItem>
-                )}
-
-                {user.role === "admin" && (
-                  <>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/admin/users"); }}>
-                      <ListItemIcon>
-                        <People fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="Staff & User Governance" />
-                    </MenuItem>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/admin/audit-logs"); }}>
-                      <ListItemIcon>
-                        <Security fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="Security Audit Trail" />
-                    </MenuItem>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/admin/reports"); }}>
-                      <ListItemIcon>
-                        <TrendingUp fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="Executive Reports & Export" />
-                    </MenuItem>
-                  </>
-                )}
-
-                {user.role === "patient" && (
-                  <>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/book-appointment"); }}>
-                      <ListItemIcon>
-                        <BookOnline fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="Book Appointment" />
-                    </MenuItem>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/appointments"); }}>
-                      <ListItemIcon>
-                        <EventNote fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="My Appointments" />
-                    </MenuItem>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/records"); }}>
-                      <ListItemIcon>
-                        <HistoryEdu fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="My Medical Records (EHR)" />
-                    </MenuItem>
-                    <MenuItem onClick={() => { handleCloseMenu(); navigate("/patient/billing"); }}>
-                      <ListItemIcon>
-                        <ReceiptLong fontSize="small" color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary="My Invoices & Payments" />
-                    </MenuItem>
-                  </>
-                )}
-
-                <MenuItem onClick={handleProfileClick}>
-                  <ListItemIcon>
-                    <Settings fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary="Profile & Settings" />
-                </MenuItem>
-
-                <Divider />
-
-                <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
-                  <ListItemIcon>
-                    <Logout fontSize="small" color="error" />
-                  </ListItemIcon>
-                  <ListItemText primary="Sign Out" />
-                </MenuItem>
-              </Menu>
             </Box>
           ) : (
             <Box sx={{ display: "flex", gap: 1 }}>
@@ -376,6 +195,11 @@ const Header = () => {
           </Tooltip>
         </Box>
       </Toolbar>
+
+      {/* Slide-out Left Navigation Drawer */}
+      {isAuthenticated && user && (
+        <SidebarDrawer open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      )}
     </AppBar>
   );
 };

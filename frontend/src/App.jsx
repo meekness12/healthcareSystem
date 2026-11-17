@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
@@ -28,6 +28,24 @@ import BillingDashboard from "./pages/billing/BillingDashboard";
 import PatientBilling from "./pages/patient/PatientBilling";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import GuestRoute from "./components/GuestRoute";
+import { useAuth } from "./context/AuthContext";
+import { getRoleDashboardPath } from "./utils/roles";
+
+const RootRedirect = () => {
+  const { isAuthenticated, user, loading } = useAuth();
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+        <CircularProgress size={42} thickness={4} color="primary" />
+      </Box>
+    );
+  }
+  if (isAuthenticated && user) {
+    return <Navigate to={getRoleDashboardPath(user.role)} replace />;
+  }
+  return <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
@@ -36,11 +54,32 @@ function App() {
         <Header />
         <Box component="main" sx={{ flexGrow: 1 }}>
           <Routes>
-            {/* Default Landing */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* Default Landing with Auth Intelligence */}
+            <Route path="/" element={<RootRedirect />} />
+            <Route
+              path="/login"
+              element={
+                <GuestRoute>
+                  <Login />
+                </GuestRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <GuestRoute>
+                  <Register />
+                </GuestRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <GuestRoute>
+                  <ForgotPassword />
+                </GuestRoute>
+              }
+            />
             <Route path="/branches" element={<BranchDirectory />} />
             <Route path="/doctors" element={<DoctorDirectory />} />
 

@@ -21,6 +21,10 @@ class AuthTest extends TestCase
     {
         $insurance = InsuranceProvider::first();
 
+        // Clean up any residual test records to avoid unique constraint collision
+        \App\Models\Patient::where('national_id', '1199580012345678')->delete();
+        User::where('email', 'jeanpaul.test@gmail.com')->delete();
+
         $payload = [
             'name' => 'Jean-Paul Nsengiyumva',
             'email' => 'jeanpaul.test@gmail.com',

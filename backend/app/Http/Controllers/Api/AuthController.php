@@ -53,8 +53,16 @@ class AuthController extends Controller
 
             // 2. Generate unique sequential patient ID number (e.g., PAT-2026-0005)
             $year = date('Y');
-            $patientCount = Patient::count() + 1;
-            $patientNumber = sprintf('PAT-%s-%04d', $year, $patientCount);
+            $maxPatient = Patient::where('patient_number', 'like', "PAT-{$year}-%")
+                ->orderByDesc('id')
+                ->first();
+            $nextSeq = 1;
+            if ($maxPatient && preg_match('/PAT-\d{4}-(\d+)/', $maxPatient->patient_number, $matches)) {
+                $nextSeq = ((int) $matches[1]) + 1;
+            }
+            do {
+                $patientNumber = sprintf('PAT-%s-%04d', $year, $nextSeq++);
+            } while (Patient::where('patient_number', $patientNumber)->exists());
 
             // 3. Create linked patient profile
             Patient::create([

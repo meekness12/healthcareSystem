@@ -28,6 +28,7 @@ import {
 } from "@mui/icons-material";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getRoleDashboardPath } from "../utils/roles";
 
 const DEMO_ACCOUNTS = [
   { role: "Patient", email: "keza.divine@gmail.com", label: "Patient (Keza Divine)", color: "primary" },
@@ -42,7 +43,7 @@ const Login = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, isAuthenticated, user, loading: authLoading } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -52,6 +53,13 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedDemoRole, setSelectedDemoRole] = useState(null);
+
+  // If already authenticated, redirect straight to assigned dashboard
+  React.useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      navigate(getRoleDashboardPath(user.role), { replace: true });
+    }
+  }, [authLoading, isAuthenticated, user, navigate]);
 
   React.useEffect(() => {
     if (location.state?.prefillEmail) {
@@ -79,7 +87,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const user = await login(formData.email, formData.password);
+      const loggedInUser = await login(formData.email, formData.password);
 
       // Check if redirect path was stored in route state
       const redirectPath = location.state?.from?.pathname;
@@ -89,28 +97,7 @@ const Login = () => {
       }
 
       // Intelligent role-based landing redirect
-      switch (user.role) {
-        case "admin":
-          navigate("/admin/dashboard", { replace: true });
-          break;
-        case "doctor":
-          navigate("/doctor/dashboard", { replace: true });
-          break;
-        case "patient":
-          navigate("/patient/dashboard", { replace: true });
-          break;
-        case "lab_technician":
-          navigate("/lab/dashboard", { replace: true });
-          break;
-        case "pharmacist":
-          navigate("/pharmacy/dashboard", { replace: true });
-          break;
-        case "billing_officer":
-          navigate("/billing/dashboard", { replace: true });
-          break;
-        default:
-          navigate("/", { replace: true });
-      }
+      navigate(getRoleDashboardPath(loggedInUser.role), { replace: true });
     } catch (err) {
       console.error("Login submission error:", err);
       const backendMessage =
@@ -122,6 +109,26 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  if (!authLoading && isAuthenticated && user) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "60vh",
+          gap: 2,
+        }}
+      >
+        <CircularProgress size={42} thickness={4} color="primary" />
+        <Typography variant="body2" color="text.secondary">
+          Active session detected for {user.name}. Redirecting to clinical dashboard...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box

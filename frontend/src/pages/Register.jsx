@@ -36,11 +36,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import authApi from "../api/auth";
 import EmailVerificationModal from "../components/auth/EmailVerificationModal";
+import { getRoleDashboardPath } from "../utils/roles";
 
 const Register = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, isAuthenticated, user, loading: authLoading } = useAuth();
+
+  React.useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      navigate(getRoleDashboardPath(user.role), { replace: true });
+    }
+  }, [authLoading, isAuthenticated, user, navigate]);
 
   const [insuranceProviders, setInsuranceProviders] = useState([]);
   const [loadingProviders, setLoadingProviders] = useState(true);

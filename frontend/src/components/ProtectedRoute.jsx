@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Box, CircularProgress, Typography } from "@mui/material";
+import { getRoleDashboardPath } from "../utils/roles";
 
 /**
  * Role-Based Access Control Protected Route Guard.
@@ -37,23 +38,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    // Redirect to user's assigned dashboard based on role
-    switch (user.role) {
-      case "admin":
-        return <Navigate to="/admin/dashboard" replace />;
-      case "doctor":
-        return <Navigate to="/doctor/dashboard" replace />;
-      case "patient":
-        return <Navigate to="/patient/dashboard" replace />;
-      case "lab_technician":
-        return <Navigate to="/lab/dashboard" replace />;
-      case "pharmacist":
-        return <Navigate to="/pharmacy/dashboard" replace />;
-      case "billing_officer":
-        return <Navigate to="/billing/dashboard" replace />;
-      default:
-        return <Navigate to="/login" replace />;
-    }
+    return <Navigate to={getRoleDashboardPath(user.role)} replace />;
   }
 
   return children;
