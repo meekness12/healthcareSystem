@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { getRoleDashboardPath } from "../utils/roles";
@@ -41,7 +41,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to={getRoleDashboardPath(user.role)} replace />;
   }
 
-  return children;
+  return children ? children : <Outlet />;
 };
 
 export default ProtectedRoute;
